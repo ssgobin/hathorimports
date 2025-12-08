@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Carrinho · Hathor Imports</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="./assets/style.css" />
+  <style>
+    .cart-wrapper {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+      gap: 16px;
+    }
+
+    .cart-item img {
+      width: 110px;
+      height: 110px;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    .cart-info {
+      flex: 1;
+    }
+
+    .cart-info h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #020000;
+    }
+
+    .cart-info .price {
+      margin-top: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #222;
+    }
+
+    .cart-remove {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 4px 10px;
+      color: #999;
+      transition: 0.2s;
+    }
+
+    .cart-remove:hover {
+      color: #ff4a4a;
+      transform: scale(1.1);
+    }
+
+    .cart-summary {
+      background: #fff;
+      border-radius: 14px;
+      padding: 20px;
+      margin-top: 30px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+    }
+
+    .cart-summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 1.05rem;
+      color: #020000;
+    }
+
+    .cart-summary-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-top: 12px;
+      border-top: 2px solid #020000;
+      padding-top: 12px;
+    }
+
+    .cart-summary-total span{
+      color: #020000;
+    }
+
+    .btn-checkout {
+      display: block;
+      width: 100%;
+      margin-top: 25px;
+      text-align: center;
+      padding: 14px;
+      background: #111;
+      color: #fff;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      text-decoration: none;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+
+    .btn-checkout:hover {
+      background: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="./assets/hathor-logo.png" alt="Hathor Imports" class="logo-img" />
+    </div>
+
+    <!-- MENU PREMIUM -->
+    <nav class="main-nav">
+      <a href="./index.html" class="nav-link">Início</a>
+
+    </nav>
+  </header>
+
+<main class="page">
+  <div class="cart-wrapper">
+
+    <h1 class="page-title">Seu Carrinho</h1>
+
+    <div id="cartItems"></div>
+
+    <div class="cart-summary">
+      <div class="cart-summary-row">
+        <span>Subtotal</span>
+        <span>R$ <span id="cartTotal">0,00</span></span>
+      </div>
+
+      <div class="cart-summary-row">
+        <span>Frete</span>
+        <span>Grátis!</span>
+      </div>
+
+      <div class="cart-summary-total">
+        <span>Total</span>
+        <span>R$ <span id="cartTotalFinal">0,00</span></span>
+      </div>
+
+      <a href="./checkout.html" class="btn-checkout">Finalizar Pedido</a>
+    </div>
+
+  </div>
+</main>
+
+<script type="module" src="./js/cart.js"></script>
+<script>
+  // Atualiza total final igual ao subtotal (por enquanto)
+  setInterval(() => {
+    const t = document.getElementById("cartTotal").textContent;
+    document.getElementById("cartTotalFinal").textContent = t;
+  }, 300);
+</script>
+
+</body>
+</html>
