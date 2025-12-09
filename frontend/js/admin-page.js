@@ -25,6 +25,13 @@ import {
   setDoc
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
+import {
+  getDocs,
+  collection,
+  query,
+  where
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -382,7 +389,15 @@ let cachedCustomers = [];
 const customersList = document.getElementById("customersList");
 
 async function loadCustomers() {
-  const customers = await listCustomers();
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("role", "==", "customer"));
+  const snap = await getDocs(q);
+
+  const customers = snap.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+
   cachedCustomers = customers;
 
   if (!customersList) return;
@@ -395,17 +410,12 @@ async function loadCustomers() {
 
   customersList.innerHTML = customers
     .map((c) => {
-      const created =
-        c.createdAt?.toDate?.()
-          ? c.createdAt.toDate().toLocaleString("pt-BR")
-          : "";
-
       return `
         <div class="admin-list-item">
           <strong>${c.name}</strong> · ${c.whatsapp || "-"}<br/>
           ${c.email ? c.email + "<br/>" : ""}
           ${c.notes ? "<span>" + c.notes + "</span>" : ""}
-          <br/><span style='font-size:0.75rem;color:#999'>${created}</span>
+          <br/><span style='font-size:0.75rem;color:#999'>${c.createdAt || ""}</span>
         </div>
       `;
     })
@@ -414,26 +424,27 @@ async function loadCustomers() {
   await populateSelectsForOrders();
 }
 
-document.getElementById("createCustomerBtn")?.addEventListener("click", async () => {
-  const name = customerName.value.trim();
-  if (!name) return alert("Informe o nome.");
 
-  await createCustomer({
-    name,
-    email: customerEmail.value.trim(),
-    whatsapp: customerWhatsapp.value.trim(),
-    notes: customerNotes.value.trim()
-  });
+// document.getElementById("createCustomerBtn")?.addEventListener("click", async () => {
+//   const name = customerName.value.trim();
+//   if (!name) return alert("Informe o nome.");
 
-  dashLog("Cliente cadastrado: " + name);
+//   await createCustomer({
+//     name,
+//     email: customerEmail.value.trim(),
+//     whatsapp: customerWhatsapp.value.trim(),
+//     notes: customerNotes.value.trim()
+//   });
 
-  customerName.value = "";
-  customerEmail.value = "";
-  customerWhatsapp.value = "";
-  customerNotes.value = "";
+//   dashLog("Cliente cadastrado: " + name);
 
-  loadCustomers();
-});
+//   customerName.value = "";
+//   customerEmail.value = "";
+//   customerWhatsapp.value = "";
+//   customerNotes.value = "";
+
+//   loadCustomers();
+// });
 
 /* =====================================================
    CUPONS

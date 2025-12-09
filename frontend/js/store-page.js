@@ -1,13 +1,16 @@
 import { listProducts } from "./store.js";
 import { handleAuthButtons } from "./auth.js";
 
+import { logout } from "./auth.js";
+
+
 const yearSpan = document.getElementById("year");
 if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 
-handleAuthButtons();
-
 const listEl = document.getElementById("productList");
 const countEl = document.getElementById("productCount");
+
+handleAuthButtons();
 
 async function load() {
   try {
@@ -67,5 +70,11 @@ async function load() {
     if (listEl) listEl.innerHTML = "<p style='color:#ef4444;'>Erro ao carregar produtos.</p>";
   }
 }
+
+document.getElementById("logoutBtn")?.addEventListener("click", async () => {
+  await logout();
+  window.location.href = "./login.html"; // redireciona após sair
+});
+
 
 load();
