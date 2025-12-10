@@ -450,6 +450,124 @@ a {
   transition: transform var(--transition-med), box-shadow var(--transition-med), border-color var(--transition-med);
 }
 
+/* GRID ESPECIAL PARA DESTAQUES NO INDEX */
+.home-highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 32px;
+  justify-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* HOME: Grid centralizado do Destaque */
+/* GRID DE DESTAQUES — 3 colunas fixas no desktop */
+.home-catalog #productList {
+  display: grid;
+  grid-template-columns: repeat(3, 310px);
+  justify-content: center;
+  gap: 32px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+.highlight-area {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.subtitle {
+  color: #bbb;
+  margin-bottom: 20px;
+}
+
+.highlight-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.highlight-track {
+  display: flex;
+  gap: 24px;
+  scroll-behavior: smooth;
+  padding: 10px;
+}
+
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  z-index: 10;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: none;
+  width: 40px;
+  height: 40px;
+  font-size: 22px;
+  cursor: pointer;
+  border-radius: 50%;
+  backdrop-filter: blur(10px);
+  transition: 0.3s;
+}
+
+.nav-btn:hover {
+  background: #ff007a;
+}
+
+.nav-btn.left { left: -55px; }
+.nav-btn.right { right: -55px; }
+
+/* Oculta botão em telas pequenas */
+@media (max-width: 768px) {
+  .nav-btn.left, .nav-btn.right {
+    display: none;
+  }
+}
+.discount-badge {
+  position: absolute;
+  background: #ff007a;
+  color: #fff;
+  padding: 4px 8px;
+  font-size: 12px;
+  top: 8px;
+  left: 8px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.old-price {
+  text-decoration: line-through;
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.new-price {
+  color: #ff007a;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+
+/* Responsivo para tablets */
+@media (max-width: 1024px) {
+  .home-catalog #productList {
+    grid-template-columns: repeat(2, 300px);
+  }
+}
+
+/* Responsivo para mobile */
+@media (max-width: 640px) {
+  .home-catalog #productList {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
 .product-card::before {
   content: "";
   position: absolute;
@@ -510,15 +628,7 @@ a {
   justify-content: space-between;
 }
 
-.product-link {
-  margin-top: 6px;
-  font-size: 0.8rem;
-  color: #e5e7eb;
-}
 
-.product-link:hover {
-  color: var(--hathor-pink);
-}
 
 /* =========================================================
    PRODUTO DETALHE (product.html + product-detail)
@@ -994,6 +1104,22 @@ select:focus {
   color: #ffffff;
 }
 
+.admin-highlight-btn {
+  border-radius: var(--radius-pill);
+  border: 1px solid rgb(255, 196, 0);
+  background: transparent;
+  color: rgb(255, 196, 0);
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.admin-highlight-btn:hover {
+  background: rgb(255, 196, 0);
+  color: #ffffff;
+}
+
 .settings-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -1103,4 +1229,54 @@ select:focus {
   top: 10px;
   left: 10px;
   z-index: 20; /* badge sempre acima da imagem */
+}
+
+/* CARD PROMOCIONAL */
+.product-card.promo {
+  position: relative;
+  border: 2px solid #ff007a;
+  background: rgba(255, 0, 122, 0.08);
+  box-shadow: 0 0 14px rgba(255, 0, 122, 0.5);
+  overflow: hidden;
+}
+
+.product-card.promo {
+  position: relative;
+  z-index: 1;
+}
+
+.product-card.promo .promo-badge {
+  position: absolute;
+  z-index: 10;
+  top: 10px;
+  right: -28px;
+  background: #ff007a;
+  color: #fff;
+  padding: 6px 40px;
+  transform: rotate(45deg);
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  pointer-events: none;
+  box-shadow: 0 0 10px rgba(255, 0, 122, 0.6);
+}
+
+.product-card.promo .old-price {
+  text-decoration: line-through;
+  font-size: 0.9rem;
+  color: #bbb;
+}
+
+.product-card.promo .new-price {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #ff007a;
+}
+
+.product-card .save-tag {
+  font-size: 11px;
+  margin-top: -6px;
+  margin-bottom: 6px;
+  color: #4ade80; /* verde de economia */
+  font-weight: bold;
 }

@@ -10,66 +10,58 @@ if (yearSpan) yearSpan.textContent = new Date().getFullYear();
 const listEl = document.getElementById("productList");
 const countEl = document.getElementById("productCount");
 
+
 handleAuthButtons();
 
 async function load() {
-  try {
-    const products = await listProducts();
-    if (countEl) {
-      countEl.textContent = products.length + (products.length === 1 ? " item" : " itens");
-    }
-    if (!listEl) return;
-    if (!products.length) {
-      listEl.innerHTML = "<p style='color:#6b7280;font-size:0.9rem;'>Nenhum produto cadastrado ainda.</p>";
-      return;
-    }
-    listEl.innerHTML = products.map((p) => {
-      const img =
-        (p.images && p.images[0]) ||
-        "https://placehold.co/600x400/000000/FFFFFF?text=Hathor+Imports";
+  const products = await listProducts();
+  const destaque = products.filter((p) => p.destaque);
 
-      const hasPromo = p.promoPercent && p.promoPercent > 0;
-      const original = Number(p.price || 0);
-      const final = hasPromo
-        ? (original - (original * p.promoPercent) / 100)
-        : original;
-
-      return `
-    <article class="product-card">
-
-      ${hasPromo ? `
-        <span class="product-discount-badge">-${p.promoPercent}%</span>
-      ` : ""}
-
-      <div class="product-thumb">
-        <img src="${img}" alt="${p.title}">
-      </div>
-
-      <div class="product-info">
-        <h3 class="product-title">${p.title}</h3>
-
-        ${hasPromo
-          ? `
-              <div>
-                <span class="product-old-price">R$ ${original.toFixed(2)}</span><br>
-                <span class="product-new-price">R$ ${final.toFixed(2)}</span>
-              </div>
-            `
-          : `<p class="product-price">R$ ${original.toFixed(2)}</p>`
-        }
-
-        <a class="product-link" href="./product.html?id=${p.id}">Abrir produto</a>
-      </div>
-
-    </article>
-  `;
-    }).join("");
-
-  } catch (err) {
-    console.error(err);
-    if (listEl) listEl.innerHTML = "<p style='color:#ef4444;'>Erro ao carregar produtos.</p>";
+  const track = document.getElementById("highlightTrack");
+  if (!destaque.length) {
+    track.innerHTML = "<p>Nenhum produto em destaque.</p>";
+    return;
   }
+
+  track.innerHTML = destaque.map((p) => {
+    const original = Number(p.originalPrice || p.price || 0);
+    const final = Number(p.price || p.finalPrice || original);
+    const hasPromo = original > final;
+    const desconto = hasPromo ? Math.round(((original - final) / original) * 100) : 0;
+
+    return `
+<article class="product-card ${hasPromo ? "promo" : ""}">
+  ${hasPromo ? `<div class="promo-badge">Promoção</div>` : ""}
+  <img src="${img}" class="product-thumb" />
+
+  <div class="product-info">
+    <h3>${p.title}</h3>
+
+    ${hasPromo ? `
+      <p class="old-price">R$ ${original.toFixed(2)}</p>
+      <p class="new-price">R$ ${final.toFixed(2)}</p>
+      <p class="save-tag">Economize ${desconto}% 🤑</p>
+    ` : `
+      <p class="product-price">R$ ${final.toFixed(2)}</p>
+    `}
+  </div>
+
+  <a href="./product.html?id=${p.id}" class="product-link">Ver detalhes</a>
+</article>
+`;
+
+
+  }).join("");
+
+  const btnL = document.querySelector(".nav-btn.left");
+  const btnR = document.querySelector(".nav-btn.right");
+
+  btnL.onclick = () => track.scrollLeft -= 300;
+  btnR.onclick = () => track.scrollLeft += 300;
 }
+
+
+
 
 document.getElementById("logoutBtn")?.addEventListener("click", async () => {
   await logout();

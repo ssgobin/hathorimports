@@ -117,7 +117,11 @@ async function loadProducts(updateDashboard = false) {
               <div class="admin-product-actions">
                 <button class="admin-edit-btn" data-id="${p.id}">Editar</button>
                 <button class="admin-delete-btn" data-id="${p.id}">Excluir</button>
+                <button class="admin-highlight-btn" data-id="${p.id}">
+                  ${p.destaque ? "Remover Destaque" : "Destacar ⭐"}
+                </button>
               </div>
+
             </div>
           `;
         })
@@ -132,6 +136,23 @@ async function loadProducts(updateDashboard = false) {
           loadProducts(true);
         });
       });
+
+      // DESTACAR PRODUTO ⭐
+      listEl.querySelectorAll(".admin-highlight-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const prod = cachedProducts.find((p) => p.id === id);
+          const ref = doc(db, "products", id);
+
+          await updateDoc(ref, {
+            destaque: !prod.destaque // alterna true/false
+          });
+
+          dashLog("Alterado destaque do produto: " + prod.title);
+          loadProducts(true);
+        });
+      });
+
     }
   }
 
@@ -198,49 +219,6 @@ if (saveSettingsBtn) {
   });
 }
 
-/* =====================================================
-   SETTINGS LOCAIS (localStorage)
-===================================================== */
-
-function loadLocalConfig() {
-  function getNumber(key, fallback) {
-    const raw = localStorage.getItem(key);
-    if (!raw) return fallback;
-    const cleaned = String(raw).replace(",", "."); // aceita 0,77 ou 0.77
-    const n = parseFloat(cleaned);
-    return isNaN(n) ? fallback : n;
-  }
-
-  return {
-    cot: getNumber("cfgCot", 0.75),
-    frete: getNumber("cfgFrete", 80),
-    decl: getNumber("cfgDecl", 60),
-    margem: getNumber("cfgMargem", 40)
-  };
-}
-
-
-// preencher campos visuais
-function renderLocalConfig() {
-  const s = loadLocalConfig();
-  document.getElementById("localCot").value = s.cot;
-  document.getElementById("localFrete").value = s.frete;
-  document.getElementById("localDecl").value = s.decl;
-  document.getElementById("localMargem").value = s.margem;
-}
-
-document.getElementById("saveLocalSettings").addEventListener("click", () => {
-  localStorage.setItem("cfgCot", document.getElementById("localCot").value);
-  localStorage.setItem("cfgFrete", document.getElementById("localFrete").value);
-  localStorage.setItem("cfgDecl", document.getElementById("localDecl").value);
-  localStorage.setItem("cfgMargem", document.getElementById("localMargem").value);
-
-  dashLog("Configurações locais atualizadas.");
-  alert("Configurações locais salvas!");
-});
-
-renderLocalConfig();
-
 
 /* =====================================================
    IMPORTAÇÃO YUPOO
@@ -267,20 +245,23 @@ function arredondaPreco(preco) {
 }
 
 
-function calcularPreco(rawYuan, finalBRL, defaultPrice) {
-  // se não vier valor em Yuan, usa o preço manual
+async function calcularPreco(rawYuan, finalBRL, defaultPrice) {
+  const s = await getSettings(); // 🔥 Firestore
+  if (!s) return Number(defaultPrice || 0);
+
+  const COT = Number(s.cotacao || 0.75);
+  const FRETE = Number(s.fretePadrao || 80);
+  const DECL = Number(s.declaracaoPadrao || 60);
+  const MARGEM = Number(s.margemPercent || 40);
+
   if (!rawYuan || rawYuan <= 0) return Number(defaultPrice || 0);
 
-  const cfg = loadLocalConfig();
+  const baseBRL = rawYuan * COT;
+  const totalSemMargem = baseBRL + FRETE + DECL;
+  const totalComMargem = totalSemMargem * (1 + MARGEM / 100);
 
-  const baseBRL = rawYuan * cfg.cot;
-  const totalSemMargem = baseBRL + cfg.frete + cfg.decl;
-  const totalComMargem = totalSemMargem * (1 + cfg.margem / 100);
-
-  // arredonda pra 2 casas antes da estética
-  const final = Math.round(totalComMargem * 100) / 100;
-
-  return arredondaPreco(final);
+  const arredondado = Math.round(totalComMargem * 100) / 100;
+  return arredondaPreco(arredondado);
 }
 
 
@@ -361,7 +342,7 @@ async function importar() {
   logStatus("Fotos: " + data.images.length);
 
   const rawPrice = data.rawPriceYuan || null;
-  const finalPrice = calcularPreco(rawPrice, data.finalPriceBRL, defaultPrice);
+  const finalPrice = await calcularPreco(rawPrice, data.finalPriceBRL, defaultPrice);
 
   const { category, label } = detectarCategoria(data.title, data.category);
 
@@ -736,10 +717,18 @@ import { updateDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-f
 const productModal = document.getElementById("productModal");
 const editTitle = document.getElementById("editTitle");
 const editPrice = document.getElementById("editPrice");
-const editPromo = document.getElementById("editPromo");
 const editFinalPrice = document.getElementById("editFinalPrice");
 const saveProductBtn = document.getElementById("saveProductBtn");
 const closeProductModal = document.getElementById("closeProductModal");
+
+// tenta achar pelos dois ids possíveis
+const editPromo =
+  document.getElementById("editPromoPercent") ||
+  document.getElementById("editPromo");
+
+const editPriceInput = document.getElementById("editPrice");
+
+
 
 let currentProductId = null;
 
@@ -753,8 +742,9 @@ function openProductModal(prod) {
   currentProductId = prod.id;
 
   editTitle.value = prod.title;
-  editPrice.value = prod.price;
-  editPromo.value = prod.promoPercent || 0;
+  editPriceInput.value = prod.price;
+  editPromo.value = prod.promoPercent ?? 0;
+
 
   editFinalPrice.textContent = "R$ " + calcFinal(prod.price, prod.promoPercent || 0);
 
@@ -765,31 +755,45 @@ closeProductModal.addEventListener("click", () => {
   productModal.classList.add("hidden");
 });
 
-editPromo.addEventListener("input", () => {
-  const p = Number(editPrice.value);
-  const promo = Number(editPromo.value);
-  editFinalPrice.textContent = "R$ " + calcFinal(p, promo);
-});
+if (editPromo) {
+  editPromo.addEventListener("input", () => {
+    const p = Number(editPriceInput.value);
+    const promo = Number(editPromo.value);
+    editFinalPrice.textContent = "R$ " + calcFinal(p, promo);
+  });
+}
 
-saveProductBtn.addEventListener("click", async () => {
+
+document.addEventListener("click", async (e) => {
+  if (!e.target.matches("#saveProductBtn")) return;
+  if (!currentProductId) return;
+
+  console.log("SALVANDO PRODUTO:", currentProductId);
+
   const title = editTitle.value.trim();
-  const price = Number(editPrice.value);
-  const promo = Number(editPromo.value);
+  const price = Number(editPriceInput.value);
+  const promoPercent = Number(editPromo?.value || 0);
 
   const ref = doc(db, "products", currentProductId);
 
+  // calcula o preço final automático
+  const finalPrice = Number((price - (price * promoPercent / 100)).toFixed(2));
+
   await updateDoc(ref, {
     title,
-    price,
-    promoPercent: promo > 0 ? promo : null,
-    originalPrice: promo > 0 ? price : null
+    originalPrice: price,
+    price: finalPrice,
+    promoPercent,
+    finalPrice
   });
 
-  Swal.fire("OK!", "Produto atualizado com sucesso!", "success");
+
+  Swal.fire("Sucesso!", "Produto atualizado com desconto!", "success");
 
   productModal.classList.add("hidden");
   loadProducts(true);
 });
+
 
 /* abrir modal ao clicar no botão editar */
 listEl.addEventListener("click", (e) => {
@@ -799,3 +803,5 @@ listEl.addEventListener("click", (e) => {
     if (prod) openProductModal(prod);
   }
 });
+
+

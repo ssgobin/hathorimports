@@ -23,7 +23,11 @@ async function loadProduct() {
   }
 
   const p = await getProduct(id);
-  const price = Number(p.price || 0);
+  const original = Number(p.originalPrice || p.price || 0);
+  const final = Number(p.finalPrice || p.price || 0);
+  const hasPromo = original > final;
+
+
   const imgs = p.images || [];
   const main = imgs[0] || "https://placehold.co/800x600?text=Hathor+Imports";
 
@@ -37,18 +41,24 @@ async function loadProduct() {
 
         <div class="thumbs">
           ${imgs
-            .slice(0, 6)
-            .map(
-              (src) =>
-                `<img src="${src}" class="thumb" onclick="document.getElementById('mainImg').src='${src}'"/>`
-            )
-            .join("")}
+      .slice(0, 6)
+      .map(
+        (src) =>
+          `<img src="${src}" class="thumb" onclick="document.getElementById('mainImg').src='${src}'"/>`
+      )
+      .join("")}
         </div>
       </div>
 
       <div class="summary">
         <h1 class="product-title">${p.title}</h1>
-        <p class="product-price">R$ ${price.toFixed(2)}</p>
+        ${hasPromo ? `
+  <p class="old-price">R$ ${original.toFixed(2)}</p>
+  <p class="new-price">R$ ${final.toFixed(2)}</p>
+` : `
+  <p class="product-price">R$ ${original.toFixed(2)}</p>
+`}
+
 
         <button id="btnAddCart" class="btn-big btn-cart">Adicionar ao Carrinho 🛒</button>
 

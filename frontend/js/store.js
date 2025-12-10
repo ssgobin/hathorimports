@@ -53,13 +53,14 @@ export async function deleteProduct(productId) {
 
 // SETTINGS
 export async function getSettings() {
-  const snap = await getDoc(settingsDoc);
-  if (!snap.exists()) return null;
-  return { id: snap.id, ...snap.data() };
+  const ref = doc(db, "settings", "global"); // 🔥 nome fixo
+  const snap = await getDoc(ref);
+  return snap.exists() ? snap.data() : null;
 }
 
 export async function saveSettings(data) {
-  await setDoc(settingsDoc, data, { merge: true });
+  const ref = doc(db, "settings", "global"); // 🔥 nome fixo
+  await setDoc(ref, data, { merge: true });
 }
 
 // CUSTOMERS
