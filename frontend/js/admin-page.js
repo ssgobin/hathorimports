@@ -86,7 +86,8 @@ function dashLog(msg) {
 /* =====================================================
    PRODUCTS
 ===================================================== */
-const listEl = document.getElementById("adminProductList");
+const listEl = document.getElementById("productList");
+
 let cachedProducts = [];
 
 async function loadProducts(updateDashboard = false) {
@@ -102,30 +103,45 @@ async function loadProducts(updateDashboard = false) {
         .map((p) => {
           const img =
             (p.images && p.images[0]) ||
-            "https://placehold.co/200x200/000/FFF?text=Hathor";
-          const price = Number(p.price || 0).toFixed(2);
-          const cat = p.categoryLabel || "Sneakers";
+            "https://placehold.co/200x200?text=Hathor";
+
+          const original = Number(p.originalPrice || p.price || 0);
+          const final = Number(p.price || original);
+          const hasPromo = original > final;
 
           return `
-            <div class="admin-product-item">
-              <img src="${img}">
-              <div class="admin-product-meta" style="color: #000000">
-                <h4>${p.title}</h4>
-                <span>R$ ${price}</span>
-                <span>${cat}</span>
-              </div>
-              <div class="admin-product-actions">
-                <button class="admin-edit-btn" data-id="${p.id}">Editar</button>
-                <button class="admin-delete-btn" data-id="${p.id}">Excluir</button>
-                <button class="admin-highlight-btn" data-id="${p.id}">
-                  ${p.destaque ? "Remover Destaque" : "Destacar ⭐"}
-                </button>
-              </div>
+      <div class="admin-product-card ${hasPromo ? "promo" : ""}">
 
-            </div>
-          `;
+        ${hasPromo ? `<div class="promo-admin-badge">PROMO</div>` : ""}
+
+        <img src="${img}" alt="${p.title}" class="admin-prod-img" />
+
+        <div class="admin-prod-info">
+          <h3>${p.title}</h3>
+
+          ${hasPromo ? `
+            <p class="old-price">De: R$ ${original.toFixed(2)}</p>
+            <p class="new-price">Por: R$ ${final.toFixed(2)}</p>
+          ` : `
+            <p class="normal-price">R$ ${final.toFixed(2)}</p>
+          `}
+        </div>
+
+        <div class="admin-actions">
+          <button class="btn-edit admin-edit-btn" data-id="${p.id}">
+            Editar
+          </button>
+
+          <button class="btn-destaque" onclick="toggleDestaque('${p.id}')">
+            ${p.destaque ? "Tirar Destaque" : "Destaque"}
+          </button>
+        </div>
+
+      </div>
+    `;
         })
         .join("");
+
 
       listEl.querySelectorAll(".admin-delete-btn").forEach((btn) => {
         btn.addEventListener("click", async () => {
@@ -732,21 +748,23 @@ const editPriceInput = document.getElementById("editPrice");
 
 let currentProductId = null;
 
-function calcFinal(price, promo) {
-  if (!promo || promo <= 0) return Number(price).toFixed(2);
-  const n = price - (price * promo) / 100;
+function calcFinal(original, promo) {
+  if (!promo || promo <= 0) return Number(original).toFixed(2);
+  const n = original - (original * promo) / 100;
   return n.toFixed(2);
 }
+
 
 function openProductModal(prod) {
   currentProductId = prod.id;
 
   editTitle.value = prod.title;
-  editPriceInput.value = prod.price;
-  editPromo.value = prod.promoPercent ?? 0;
+  const basePrice = Number(prod.originalPrice ?? prod.price);
 
+  editPriceInput.value = basePrice.toFixed(2);
+  editPromo.value = prod.promoPercent || 0;
 
-  editFinalPrice.textContent = "R$ " + calcFinal(prod.price, prod.promoPercent || 0);
+  updateFinalPriceDisplay(); // recalcular quando abrir
 
   productModal.classList.remove("hidden");
 }
@@ -768,31 +786,39 @@ document.addEventListener("click", async (e) => {
   if (!e.target.matches("#saveProductBtn")) return;
   if (!currentProductId) return;
 
-  console.log("SALVANDO PRODUTO:", currentProductId);
-
   const title = editTitle.value.trim();
-  const price = Number(editPriceInput.value);
+  const inputPrice = Number(editPriceInput.value);
   const promoPercent = Number(editPromo?.value || 0);
 
   const ref = doc(db, "products", currentProductId);
 
-  // calcula o preço final automático
-  const finalPrice = Number((price - (price * promoPercent / 100)).toFixed(2));
+  const prod = cachedProducts.find(p => p.id === currentProductId);
+
+  // ✔️ Garante que originalPrice SEMPRE exista
+  const originalPrice = Number(prod.originalPrice ?? prod.price);
+
+  let newFinalPrice = originalPrice;
+
+  if (promoPercent > 0) {
+    newFinalPrice = Number(
+      (originalPrice - (originalPrice * promoPercent / 100)).toFixed(2)
+    );
+  }
 
   await updateDoc(ref, {
     title,
-    originalPrice: price,
-    price: finalPrice,
+    originalPrice,     // 🔥 sempre salvo!
     promoPercent,
-    finalPrice
+    price: newFinalPrice
   });
 
-
-  Swal.fire("Sucesso!", "Produto atualizado com desconto!", "success");
+  Swal.fire("Sucesso!", "Produto atualizado!", "success");
 
   productModal.classList.add("hidden");
   loadProducts(true);
 });
+
+
 
 
 /* abrir modal ao clicar no botão editar */
@@ -805,3 +831,25 @@ listEl.addEventListener("click", (e) => {
 });
 
 
+function updateFinalPriceDisplay() {
+  const inputPrice = Number(editPriceInput.value || 0);
+  const promoPercent = Number(editPromo.value || 0);
+
+  let finalPrice = inputPrice;
+  if (promoPercent > 0) {
+    finalPrice = inputPrice - (inputPrice * promoPercent / 100);
+  }
+
+  if (editFinalPrice) {
+    editFinalPrice.textContent = "R$ " + finalPrice.toFixed(2);
+  }
+}
+window.toggleDestaque = async (id) => {
+  const ref = doc(db, "products", id);
+
+  const prod = cachedProducts.find(p => p.id === id);
+  const newValue = !prod.destaque;
+
+  await updateDoc(ref, { destaque: newValue });
+  loadProducts();
+};
