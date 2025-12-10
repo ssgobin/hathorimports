@@ -978,6 +978,22 @@ select:focus {
   color: #ffffff;
 }
 
+.admin-edit-btn {
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255, 0, 122, 0.6);
+  background: transparent;
+  color: rgba(255, 0, 122, 0.6);
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.admin-edit-btn:hover {
+  background: rgba(255, 0, 122, 0.6);
+  color: #ffffff;
+}
+
 .settings-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
