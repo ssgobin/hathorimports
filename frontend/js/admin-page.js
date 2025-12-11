@@ -132,6 +132,10 @@ async function loadProducts(updateDashboard = false) {
             Editar
           </button>
 
+          <button class="btn-edit admin-delete-btn" data-id="${p.id}">
+            Excluir
+          </button>
+
           <button class="btn-destaque" onclick="toggleDestaque('${p.id}')">
             ${p.destaque ? "Tirar Destaque" : "Destaque"}
           </button>
