@@ -267,6 +267,25 @@
             return subtotal;
         }
 
+        function calculateFinalTotal(subtotal, frete) {
+            let total = subtotal;
+
+            if (appliedCoupon) {
+                if (appliedCoupon.type === "percent") {
+                    total -= subtotal * (appliedCoupon.value / 100);
+                }
+
+                if (appliedCoupon.type === "fixed") {
+                    total -= appliedCoupon.value;
+                }
+            }
+
+            if (total < 0) total = 0;
+
+            return total + frete;
+        }
+
+
 
         // VIA CEP (preenche endereço automaticamente)
         document.getElementById("cepInput").addEventListener("blur", async () => {
@@ -344,6 +363,8 @@
         });
 
 
+
+
         // FINALIZA PEDIDO
         document.getElementById("checkoutForm").addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -374,7 +395,8 @@
             }));
 
             const subtotal = items.reduce((acc, p) => acc + p.price * p.qty, 0);
-            const total = subtotal + frete;
+            const total = calculateFinalTotal(subtotal, frete);
+
 
             const pedido = {
                 customerName: name,
@@ -384,7 +406,7 @@
                 items,
                 subtotal,
                 frete,
-                total,
+                total, // ✅ agora COM desconto
                 paymentMethod,
                 coupon: appliedCoupon ? appliedCoupon.code : null,
                 discount: appliedCoupon ? appliedCoupon.value : 0,
@@ -394,6 +416,7 @@
             };
 
 
+
             await createOrder(pedido);
             if (appliedCoupon) {
                 await useCoupon(appliedCoupon.code);
@@ -401,6 +424,9 @@
 
 
             localStorage.removeItem("cart");
+
+            var teste = document.getElementById("summaryTotal")
+            console.log(teste);
 
             Swal.fire({
                 icon: "success",

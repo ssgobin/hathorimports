@@ -233,6 +233,10 @@ a {
 
 /* BOTÕES */
 
+.btn-cart {
+  background-color: rgba(255, 0, 122, 0.4);
+}
+
 .btn-outline {
   border-radius: var(--radius-pill);
   padding: 7px 16px;

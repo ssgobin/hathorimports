@@ -426,26 +426,29 @@ async function loadCustomers() {
 }
 
 
-// document.getElementById("createCustomerBtn")?.addEventListener("click", async () => {
-//   const name = customerName.value.trim();
-//   if (!name) return alert("Informe o nome.");
+document.getElementById("createCustomerBtn")?.addEventListener("click", async () => {
+  const name = customerName.value.trim();
+  if (!name) return alert("Informe o nome.");
 
-//   await createCustomer({
-//     name,
-//     email: customerEmail.value.trim(),
-//     whatsapp: customerWhatsapp.value.trim(),
-//     notes: customerNotes.value.trim()
-//   });
+  await createCustomer({
+    name,
+    email: customerEmail.value.trim(),
+    whatsapp: customerWhatsapp.value.trim(),
+    notes: customerNotes.value.trim(),
+    role: "customer",   // 🔥 garante que aparece na listagem
+    createdAt: new Date().toISOString()
+  });
 
-//   dashLog("Cliente cadastrado: " + name);
+  dashLog("Cliente cadastrado: " + name);
 
-//   customerName.value = "";
-//   customerEmail.value = "";
-//   customerWhatsapp.value = "";
-//   customerNotes.value = "";
+  customerName.value = "";
+  customerEmail.value = "";
+  customerWhatsapp.value = "";
+  customerNotes.value = "";
 
-//   loadCustomers();
-// });
+  loadCustomers();
+});
+
 
 /* =====================================================
    CUPONS

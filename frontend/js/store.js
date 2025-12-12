@@ -7,6 +7,7 @@ import {
   doc,
   getDoc,
   query,
+  where,
   orderBy,
   setDoc,
   deleteDoc,
@@ -152,4 +153,138 @@ export async function useCoupon(code) {
 export async function updateCoupon(id, data) {
   const ref = doc(db, "coupons", id);
   await setDoc(ref, data, { merge: true });
+}
+
+// PRODUTOS EM DESTAQUE
+export async function listFeaturedProducts() {
+  const q = query(
+    productsCol,
+    where("destaque", "==", true),
+    orderBy("createdAt", "desc")
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+// PRODUTOS POR CATEGORIA
+export async function listProductsByCategory(category) {
+  const q = query(
+    productsCol,
+    where("category", "==", category),
+    orderBy("createdAt", "desc")
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+const CACHE_KEY = "products_cache";
+const CACHE_TIME = 1000 * 60 * 5; // 5 minutos
+
+export async function listProductsCached() {
+  const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+
+  if (cached && (Date.now() - cached.time < CACHE_TIME)) {
+    return cached.data;
+  }
+
+  const q = query(productsCol, orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+  const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  localStorage.setItem(CACHE_KEY, JSON.stringify({
+    time: Date.now(),
+    data
+  }));
+
+  return data;
+}
+
+const PRODUCTS_CACHE_KEY = "products_cache_v1";
+const PRODUCTS_CACHE_TTL = 1000 * 60 * 5; // 5 minutos
+
+export async function prefetchProducts() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(PRODUCTS_CACHE_KEY) || "null");
+
+    if (cached && Date.now() - cached.time < PRODUCTS_CACHE_TTL) {
+      return; // cache ainda válido
+    }
+
+    const q = query(productsCol, orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+
+    const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    localStorage.setItem(
+      PRODUCTS_CACHE_KEY,
+      JSON.stringify({
+        time: Date.now(),
+        data
+      })
+    );
+
+  } catch (err) {
+    console.warn("Prefetch falhou:", err.message);
+  }
+}
+
+export function getCachedProducts() {
+  const cached = JSON.parse(localStorage.getItem(PRODUCTS_CACHE_KEY) || "null");
+  if (!cached) return null;
+  return cached.data;
+}
+
+const ENABLE_PRELOAD_LOG = true; // 🔥 mude para false em produção
+
+export function preloadProductImages(products, limit = 12) {
+  if (!Array.isArray(products)) return;
+
+  if (ENABLE_PRELOAD_LOG) {
+    console.group("🖼️ [PRELOAD] Iniciando preload de imagens");
+    console.log("Produtos recebidos:", products.length);
+    console.log("Limite aplicado:", limit);
+  }
+
+  products
+    .slice(0, limit)
+    .forEach((p, index) => {
+      const imgs = p.images || [];
+
+      if (ENABLE_PRELOAD_LOG) {
+        console.group(`📦 Produto ${index + 1}: ${p.title || p.id}`);
+      }
+
+      imgs.slice(0, 2).forEach((src, imgIndex) => {
+        if (!src) return;
+
+        if (ENABLE_PRELOAD_LOG) {
+          console.log(`➡️ Preload imagem ${imgIndex + 1}:`, src);
+        }
+
+        const img = new Image();
+
+        img.onload = () => {
+          if (ENABLE_PRELOAD_LOG) {
+            console.log("✅ Imagem carregada:", src);
+          }
+        };
+
+        img.onerror = () => {
+          if (ENABLE_PRELOAD_LOG) {
+            console.warn("❌ Erro ao carregar imagem:", src);
+          }
+        };
+
+        img.src = src;
+      });
+
+      if (ENABLE_PRELOAD_LOG) {
+        console.groupEnd();
+      }
+    });
+
+  if (ENABLE_PRELOAD_LOG) {
+    console.groupEnd();
+    console.log("🟢 [PRELOAD] Finalizado");
+  }
 }

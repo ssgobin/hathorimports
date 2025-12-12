@@ -24,7 +24,7 @@ async function loadProduct() {
 
   const p = await getProduct(id);
   const original = Number(p.originalPrice || p.price || 0);
-  const final = Number(p.finalPrice || p.price || 0);
+  const final = Number(p.price || 0);
   const hasPromo = original > final;
 
 
@@ -68,9 +68,30 @@ async function loadProduct() {
   `;
 
   document.getElementById("btnAddCart").onclick = () => {
-    addToCart({ id, title: p.title, price, images: p.images });
-    alert("Adicionado ao carrinho!");
+    addToCart({
+      id,
+      title: p.title,
+      price: final,
+      images: p.images
+    });
+
+    Swal.fire({
+      title: "Produto adicionado! 🛒",
+      html: `<b>${p.title}</b> foi adicionado ao seu carrinho.`,
+      icon: "success",
+      showCancelButton: true,
+      confirmButtonText: "Ver Carrinho",
+      cancelButtonText: "Continuar Comprando",
+      confirmButtonColor: "#000",
+      cancelButtonColor: "#ff007a"
+    }).then(result => {
+      if (result.isConfirmed) {
+        window.location.href = "cart.html";
+      }
+    });
   };
+
+
 }
 
 loadProduct();

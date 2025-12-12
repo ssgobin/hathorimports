@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <title>Catálogo · Hathor Imports</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="./assets/style.css" />
 </head>
+
 <body>
 
-<header class="topbar">
+  <header class="topbar">
     <div class="brand">
       <a href="index.html"><img src="./assets/hathor-logo.png" alt="Hathor Imports" class="logo-img" /></a>
     </div>
@@ -25,59 +27,65 @@
       </div>
     </nav>
   </header>
-<script type="module" src="./js/home-page.js"></script>
-<main class="page">
+  <script type="module" src="./js/home-page.js"></script>
+  <main class="page">
 
-<section class="catalog-section">
-  <h2>Todos os produtos</h2><br>
+    <section class="catalog-section">
+      <h2>Todos os produtos</h2><br>
 
-  <input id="searchInput"
-    type="text"
-    placeholder="Buscar por nome, categoria..."
-    class="search-bar"
-    style="width:100%;padding:10px;margin-bottom:14px;border-radius:8px;display: none;">
+      <input id="searchInput" type="text" placeholder="Buscar por nome, categoria..." class="search-bar"
+        style="width:100%;padding:10px;margin-bottom:14px;border-radius:8px;display: none;">
 
-  <div id="storeList" class="product-grid"></div>
-</section>
+      <div id="storeList" class="product-grid"></div>
+    </section>
 
-<br>
+    <br>
 
-</main>
+  </main>
 
-<script type="module">
-  import { listProducts } from "./js/store.js";
+  <script type="module">
+    import { listProducts, getCachedProducts } from "./js/store.js";
 
-  const list = document.getElementById("storeList");
-  const searchInput = document.getElementById("searchInput");
-  let cache = [];
+    const list = document.getElementById("storeList");
+    const searchInput = document.getElementById("searchInput");
+    let cache = [];
 
-  async function load() {
-    cache = await listProducts();
-    render(cache);
-  }
+    async function load() {
+      const cached = getCachedProducts();
 
-  function render(items) {
-    if (!items.length) {
-      list.innerHTML = "<p>Nenhum produto encontrado.</p>";
-      return;
+      if (cached && cached.length) {
+        cache = cached;
+        render(cache);
+        return;
+      }
+
+      // fallback (primeira visita ou cache expirado)
+      cache = await listProducts();
+      render(cache);
     }
 
-    list.innerHTML = items.map((p) => {
-      const img = (p.images && p.images[0]) ||
-        "https://placehold.co/600x400?text=Hathor";
+    function render(items) {
+      if (!items.length) {
+        list.innerHTML = "<p>Nenhum produto encontrado.</p>";
+        return;
+      }
 
-      const original = Number(p.originalPrice || p.price || 0);
-      const final = Number(p.price || p.finalPrice || original);
-      const hasPromo = original > final;
-      const desconto = hasPromo ? Math.round(((original-final)/original)*100) : 0;
+      list.innerHTML = items.map((p) => {
+        const img = (p.images && p.images[0]) ||
+          "https://placehold.co/600x400?text=Hathor";
 
-      return `
+        const original = Number(p.originalPrice || p.price || 0);
+        const final = Number(p.price || p.finalPrice || original);
+        const hasPromo = original > final;
+        const desconto = hasPromo ? Math.round(((original - final) / original) * 100) : 0;
+
+        return `
       <a href="./product.html?id=${p.id}" class="product-link">
         <article class="product-card ${hasPromo ? "promo" : ""}">
         
           ${hasPromo ? `<div class="promo-badge">${desconto}% OFF</div>` : ""}
           
-          <img src="${img}" class="product-thumb">
+          <img src="${img}" class="product-thumb" loading="lazy">
           
           <div class="product-info">
             <h3>${p.title}</h3>
@@ -94,21 +102,22 @@
         </article>
       </a>
       `;
-    }).join("");
-  }
+      }).join("");
+    }
 
-  searchInput.addEventListener("input", () => {
-    const q = searchInput.value.toLowerCase();
-    const filtered = cache.filter(p =>
-      p.title.toLowerCase().includes(q) ||
-      (p.categoryLabel && p.categoryLabel.toLowerCase().includes(q))
-    );
-    render(filtered);
-  });
+    searchInput.addEventListener("input", () => {
+      const q = searchInput.value.toLowerCase();
+      const filtered = cache.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        (p.categoryLabel && p.categoryLabel.toLowerCase().includes(q))
+      );
+      render(filtered);
+    });
 
-  load();
-</script>
+    load();
+  </script>
 
 
 </body>
+
 </html>

@@ -188,7 +188,7 @@
           </div>
 
           <button id="createCustomerBtn" class="btn-primary full" style="margin-top: 10px;">Salvar cliente</button>
-
+          <h3 style="margin-top:20px;">Clientes cadastrados</h3>
           <div id="customersList" class="admin-list-block"></div>
         </div>
       </section>
@@ -360,6 +360,32 @@
     #modalItems li {
       padding: 4px 0;
       border-bottom: 1px solid #eee;
+    }
+
+    #customersList {
+      min-height: 80px;
+    }
+
+    .card {
+      margin-bottom: 40px !important;
+    }
+
+    #customersList {
+      margin-top: 20px;
+      background: #111;
+      /* ou branco se preferir */
+      padding: 10px 15px;
+      border-radius: 8px;
+      min-height: 150px;
+      /* chave para não desaparecer */
+      color: white;
+      /* porque seu card é escuro */
+    }
+
+
+    .admin-list-block {
+      margin-top: 30px;
+      padding-bottom: 40px;
     }
   </style>
   <!-- MODAL EDITAR PRODUTO -->
