@@ -1,6 +1,4 @@
-// =============================
 // CARRINHO LOCAL STORAGE
-// =============================
 export function getCart() {
   return JSON.parse(localStorage.getItem("cart") || "[]");
 }
@@ -15,9 +13,7 @@ export function addToCart(product) {
   saveCart(cart);
 }
 
-// =============================
 // REMOVER ITEM DO CARRINHO
-// =============================
 export function removeFromCart(index) {
   const cart = getCart();
   cart.splice(index, 1);
@@ -25,9 +21,7 @@ export function removeFromCart(index) {
   renderCart();
 }
 
-// =============================
 // RENDERIZAR O CARRINHO
-// =============================
 const list = document.getElementById("cartItems");
 const totalEl = document.getElementById("cartTotal");
 const totalFinalEl = document.getElementById("cartTotalFinal");

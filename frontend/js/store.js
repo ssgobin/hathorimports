@@ -1,110 +1,137 @@
-import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  doc,
-  getDoc,
-  query,
-  orderBy,
-  setDoc,
-  deleteDoc,
-  updateDoc,
-  increment
-} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { firebaseConfig } from "./firebase-config.js";
+/**
+ * Store.js - wrapper do Firestore (Firebase)
+ * O Firebase é carregado dinamicamente (lazy-load) para melhorar a performance
+ */
 
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Cache para Firebase (carrega uma única vez)
+let firebasePromise = null;
 
-const productsCol = collection(db, "products");
-const customersCol = collection(db, "customers");
-const ordersCol = collection(db, "orders");
-const couponsCol = collection(db, "coupons");
-const settingsDoc = doc(db, "settings", "global");
+async function getFirebase() {
+  if (!firebasePromise) {
+    firebasePromise = import('./firebase-init.js');
+  }
+  return firebasePromise;
+}
 
-// PRODUCTS
+// PRODUTOS
 export async function listProducts() {
-  const q = query(productsCol, orderBy("createdAt", "desc"));
-  const snap = await getDocs(q);
+  const fb = await getFirebase();
+  const q = fb.query(fb.productsCol, fb.orderBy("createdAt", "desc"));
+  const snap = await fb.getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 export async function getProduct(id) {
-  const ref = doc(db, "products", id);
-  const snap = await getDoc(ref);
+  const fb = await getFirebase();
+  const ref = fb.doc(fb.db, "products", id);
+  const snap = await fb.getDoc(ref);
   if (!snap.exists()) throw new Error("Produto não encontrado");
   return { id: snap.id, ...snap.data() };
 }
 
 export async function createProduct(data) {
+  const fb = await getFirebase();
   const now = new Date();
-  return addDoc(productsCol, {
+  return fb.addDoc(fb.productsCol, {
     ...data,
     createdAt: now
   });
 }
 
 export async function deleteProduct(productId) {
-  const ref = doc(db, "products", productId);
-  await deleteDoc(ref);
+  const fb = await getFirebase();
+  const ref = fb.doc(fb.db, "products", productId);
+  return fb.deleteDoc(ref);
 }
 
-// SETTINGS
+export async function updateProductPrice(productId, newPrice) {
+  const fb = await getFirebase();
+  const ref = fb.doc(fb.db, "products", productId);
+  return fb.updateDoc(ref, { price: newPrice });
+}
+
+export async function updateProductTitle(productId, newTitle) {
+  const fb = await getFirebase();
+  const ref = fb.doc(fb.db, "products", productId);
+  return fb.updateDoc(ref, { title: newTitle });
+}
+
+export async function updateProductPromotion(productId, promotion) {
+  const fb = await getFirebase();
+  const ref = fb.doc(fb.db, "products", productId);
+  return fb.updateDoc(ref, { promotion });
+}
+
+export async function saveProduct(productId, data) {
+  const fb = await getFirebase();
+  const ref = fb.doc(fb.db, "products", productId);
+  return fb.setDoc(ref, data, { merge: true });
+}
+
+// CONFIGURAÇÕES
 export async function getSettings() {
-  const snap = await getDoc(settingsDoc);
+  const fb = await getFirebase();
+  const ref = fb.doc(fb.db, "settings", "global");
+  const snap = await fb.getDoc(ref);
   if (!snap.exists()) return null;
   return { id: snap.id, ...snap.data() };
 }
 
 export async function saveSettings(data) {
-  await setDoc(settingsDoc, data, { merge: true });
+  const fb = await getFirebase();
+  const ref = fb.doc(fb.db, "settings", "global");
+  return fb.setDoc(ref, data, { merge: true });
 }
 
-// CUSTOMERS
+// CLIENTES
 export async function createCustomer(data) {
+  const fb = await getFirebase();
   const now = new Date();
-  return addDoc(customersCol, { ...data, createdAt: now });
+  return fb.addDoc(fb.customersCol, { ...data, createdAt: now });
 }
 
 export async function listCustomers() {
-  const q = query(customersCol, orderBy("createdAt", "desc"));
-  const snap = await getDocs(q);
+  const fb = await getFirebase();
+  const q = fb.query(fb.customersCol, fb.orderBy("createdAt", "desc"));
+  const snap = await fb.getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
-// COUPONS
+export async function getCustomer(customerId) {
+  const fb = await getFirebase();
+  const ref = fb.doc(fb.db, "customers", customerId);
+  const snap = await fb.getDoc(ref);
+  if (!snap.exists()) throw new Error("Cliente não encontrado");
+  return { id: snap.id, ...snap.data() };
+}
+
+export async function updateCustomerBalance(customerId, amount) {
+  const fb = await getFirebase();
+  const ref = fb.doc(fb.db, "customers", customerId);
+  return fb.updateDoc(ref, { balance: fb.increment(amount) });
+}
+
+// CUPONS
 export async function createCoupon(data) {
+  const fb = await getFirebase();
   const now = new Date();
   let expiresAt = null;
   if (data.expiresAt) {
     expiresAt = new Date(data.expiresAt);
   }
-  return addDoc(couponsCol, { ...data, expiresAt, createdAt: now });
+  return fb.addDoc(fb.couponsCol, { ...data, expiresAt, createdAt: now });
 }
 
 export async function listCoupons() {
-  const q = query(couponsCol, orderBy("createdAt", "desc"));
-  const snap = await getDocs(q);
+  const fb = await getFirebase();
+  const q = fb.query(fb.couponsCol, fb.orderBy("createdAt", "desc"));
+  const snap = await fb.getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
-// ORDERS
-export async function createOrder(data) {
-  const now = new Date();
-  return addDoc(ordersCol, { ...data, createdAt: now });
-}
-
-export async function listOrders() {
-  const q = query(ordersCol, orderBy("createdAt", "desc"));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-}
-
-// BUSCAR CUPOM PELO CÓDIGO
 export async function getCoupon(code) {
-  const snap = await getDocs(couponsCol);
+  const fb = await getFirebase();
+  const snap = await fb.getDocs(fb.couponsCol);
 
   let coupon = null;
 
@@ -115,7 +142,7 @@ export async function getCoupon(code) {
       coupon = {
         id: docSnap.id,
         ...data,
-        uses: data.uses ?? 0,       // ← garante que venha corretamente
+        uses: data.uses ?? 0,
         expiresAt: data.expiresAt || null
       };
     }
@@ -124,9 +151,9 @@ export async function getCoupon(code) {
   return coupon;
 }
 
-// MARCAR CUPOM COMO USADO
 export async function useCoupon(code) {
-  const snap = await getDocs(couponsCol);
+  const fb = await getFirebase();
+  const snap = await fb.getDocs(fb.couponsCol);
 
   let couponDoc = null;
 
@@ -142,13 +169,33 @@ export async function useCoupon(code) {
   const ref = couponDoc.ref;
   console.log(ref);
 
-  await updateDoc(ref, {
-    uses: increment(1)   // ← mais seguro, mais rápido e não sobrescreve nada
+  return fb.updateDoc(ref, {
+    uses: fb.increment(1)
   });
 }
 
-// ATUALIZAR CUPOM MANUAL
 export async function updateCoupon(id, data) {
-  const ref = doc(db, "coupons", id);
-  await setDoc(ref, data, { merge: true });
+  const fb = await getFirebase();
+  const ref = fb.doc(fb.db, "coupons", id);
+  return fb.setDoc(ref, data, { merge: true });
+}
+
+export async function deleteCoupon(couponId) {
+  const fb = await getFirebase();
+  const ref = fb.doc(fb.db, "coupons", couponId);
+  return fb.deleteDoc(ref);
+}
+
+// PEDIDOS
+export async function createOrder(data) {
+  const fb = await getFirebase();
+  const now = new Date();
+  return fb.addDoc(fb.ordersCol, { ...data, createdAt: now });
+}
+
+export async function listOrders() {
+  const fb = await getFirebase();
+  const q = fb.query(fb.ordersCol, fb.orderBy("createdAt", "desc"));
+  const snap = await fb.getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }

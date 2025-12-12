@@ -15,9 +15,7 @@ console.log("AUTH MODULE LOADED:", import.meta.url);
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
-/* ======================================================
-   SALVAR USUÁRIO LOCAL
-====================================================== */
+// SALVAR USUÁRIO LOCAL
 async function cacheUser(user) {
   if (!user) {
     localStorage.removeItem("user");
@@ -28,9 +26,7 @@ async function cacheUser(user) {
   localStorage.setItem("user", JSON.stringify(data));
 }
 
-/* ======================================================
-   OBSERVADOR DE LOGIN
-====================================================== */
+// OBSERVADOR DE LOGIN
 export function watchAuth(callback) {
   onAuthStateChanged(auth, async (user) => {
     await cacheUser(user);
@@ -38,9 +34,7 @@ export function watchAuth(callback) {
   });
 }
 
-/* ======================================================
-   PROTEGER PÁGINAS NORMAIS
-====================================================== */
+// PROTEGER PÁGINAS NORMAIS
 export function requireAuth() {
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -50,9 +44,7 @@ export function requireAuth() {
   });
 }
 
-/* ======================================================
-   PROTEGER PÁGINAS DE ADMIN
-====================================================== */
+// PROTEGER PÁGINAS DE ADMIN
 export function requireAdmin() {
   onAuthStateChanged(auth, async (user) => {
     if (!user) return (window.location.href = "./login.html");
@@ -67,9 +59,7 @@ export function requireAdmin() {
   });
 }
 
-/* ======================================================
-   BOTÕES
-====================================================== */
+// BOTÕES
 export function handleAuthButtons() {
   const logoutBtn = document.getElementById("logoutBtn");
   const loginLink = document.getElementById("loginLink");

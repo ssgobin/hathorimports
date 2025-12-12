@@ -174,10 +174,18 @@
 
 <body>
 
+  <!-- Global Loading Spinner -->
+  <div id="loadingSpinner" class="spinner hidden">
+    <div class="spinner-ring" aria-hidden="true"></div>
+    <div class="spinner-text">Carregando...</div>
+  </div>
+
   <!-- HEADER -->
   <header class="topbar">
     <div class="brand">
-      <img src="./assets/hathor-logo.png" alt="Hathor Imports" class="logo-img" />
+      <a href="./index.html">
+        <img src="./assets/hathor-logo.png" alt="Hathor Imports" class="logo-img" />
+      </a>  
     </div>
 
     <!-- MENU PREMIUM -->
@@ -243,6 +251,10 @@
     <p class="footer-copy">© <span id="year"></span> Hathor Imports</p>
   </footer>
 
+  <script type="module" src="./js/spinner.js"></script>
+  <script type="module" src="./js/toast.js"></script>
+  <script type="module" src="./js/form-validator.js"></script>
+  <script type="module" src="./js/lazy-load.js"></script>
   <script type="module" src="./js/store-page.js"></script>
 </body>
 

@@ -1,3 +1,5 @@
+import { getSwal } from './swal-loader.js';
+
 import {
   createProduct,
   listProducts,
@@ -18,7 +20,7 @@ import {
   logout
 } from "./auth.js";
 
-// 🔥 FIREBASE
+// FIREBASE
 import {
   getFirestore,
   doc,
@@ -43,9 +45,16 @@ requireAdmin();
 
 handleAuthButtons();
 
-/* =====================================================
-   SIDEBAR
-===================================================== */
+// Initialize shared UI elements (spinner/toast)
+initUI();
+
+// UX helpers (spinner, toast, form validation)
+import { initUI, showSpinner, hideSpinner, showToast } from "./ui.js";
+import { setupUrlValidation } from "./form-validator.js";
+
+/*
+  SIDEBAR
+*/
 const menuItems = document.querySelectorAll(".admin-menu-item");
 const views = document.querySelectorAll(".admin-view");
 const titleEl = document.getElementById("adminTitle");
@@ -64,15 +73,15 @@ menuItems.forEach((btn) => {
   });
 });
 
-/* =====================================================
+/*
    LOGOUT
-===================================================== */
+*/
 const logoutBtn = document.getElementById("logoutBtn");
 if (logoutBtn) logoutBtn.addEventListener("click", () => logout());
 
-/* =====================================================
+/*
    DASHBOARD
-===================================================== */
+*/
 const metricTotalProducts = document.getElementById("metricTotalProducts");
 const metricAvgPrice = document.getElementById("metricAvgPrice");
 const metricLastImport = document.getElementById("metricLastImport");
@@ -83,9 +92,9 @@ function dashLog(msg) {
   dashboardLog.scrollTop = dashboardLog.scrollHeight;
 }
 
-/* =====================================================
+/*
    PRODUCTS
-===================================================== */
+*/
 const listEl = document.getElementById("adminProductList");
 let cachedProducts = [];
 
@@ -123,6 +132,7 @@ async function loadProducts(updateDashboard = false) {
         })
         .join("");
 
+      // Delete handler
       listEl.querySelectorAll(".admin-delete-btn").forEach((btn) => {
         btn.addEventListener("click", async () => {
           const id = btn.dataset.id;
@@ -130,6 +140,15 @@ async function loadProducts(updateDashboard = false) {
           await deleteProduct(id);
           dashLog("Produto excluído: " + id);
           loadProducts(true);
+        });
+      });
+
+      // Edit handler
+      listEl.querySelectorAll(".admin-edit-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const product = cachedProducts.find(p => p.id === id);
+          if (product) openEditProductModal(product);
         });
       });
     }
@@ -157,9 +176,85 @@ async function loadProducts(updateDashboard = false) {
   await populateSelectsForOrders();
 }
 
-/* =====================================================
+/*
+   MODAL EDITAR PRODUTO
+*/
+const productModal = document.getElementById('productModal');
+const editTitle = document.getElementById('editTitle');
+const editPrice = document.getElementById('editPrice');
+const editPromo = document.getElementById('editPromo');
+const editFinalPrice = document.getElementById('editFinalPrice');
+const saveProductBtn = document.getElementById('saveProductBtn');
+const closeProductModal = document.getElementById('closeProductModal');
+
+let currentEditingProductId = null;
+
+function openEditProductModal(product) {
+  currentEditingProductId = product.id;
+  editTitle.value = product.title || '';
+  editPrice.value = product.price || 0;
+  editPromo.value = product.promo || 0;
+
+  // Calcula preço final com promoção
+  updateEditFinalPrice();
+
+  if (productModal) productModal.classList.remove('hidden');
+}
+
+function updateEditFinalPrice() {
+  const basePrice = parseFloat(editPrice.value) || 0;
+  const promoPercent = parseFloat(editPromo.value) || 0;
+  const finalPrice = basePrice - (basePrice * promoPercent / 100);
+  editFinalPrice.textContent = 'R$ ' + finalPrice.toFixed(2).replace('.', ',');
+}
+
+editPrice.addEventListener('input', updateEditFinalPrice);
+editPromo.addEventListener('input', updateEditFinalPrice);
+
+if (saveProductBtn) {
+  saveProductBtn.addEventListener('click', async () => {
+    try {
+      if (!currentEditingProductId) return;
+      showSpinner();
+      saveProductBtn.disabled = true;
+
+      const basePrice = parseFloat(editPrice.value) || 0;
+      const promoPercent = parseFloat(editPromo.value) || 0;
+      const finalPrice = basePrice - (basePrice * promoPercent / 100);
+
+      // Atualiza via Firebase
+      const ref = doc(db, 'products', currentEditingProductId);
+      await setDoc(ref, {
+        title: editTitle.value.trim(),
+        price: finalPrice,
+        promo: promoPercent,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+
+      showToast('Produto atualizado com sucesso!', 'success');
+      dashLog('Produto atualizado: ' + editTitle.value);
+      
+      if (productModal) productModal.classList.add('hidden');
+      await loadProducts(true);
+    } catch (err) {
+      console.error('Erro ao salvar produto:', err);
+      showToast('Erro ao salvar produto', 'error');
+    } finally {
+      hideSpinner();
+      saveProductBtn.disabled = false;
+    }
+  });
+}
+
+if (closeProductModal) {
+  closeProductModal.addEventListener('click', () => {
+    if (productModal) productModal.classList.add('hidden');
+  });
+}
+
+/*
    SETTINGS
-===================================================== */
+*/
 let appSettings = null;
 
 const cfgWhatsapp = document.getElementById("cfgWhatsapp");
@@ -198,9 +293,9 @@ if (saveSettingsBtn) {
   });
 }
 
-/* =====================================================
+/*
    SETTINGS LOCAIS (localStorage)
-===================================================== */
+*/
 
 function loadLocalConfig() {
   function getNumber(key, fallback) {
@@ -242,9 +337,9 @@ document.getElementById("saveLocalSettings").addEventListener("click", () => {
 renderLocalConfig();
 
 
-/* =====================================================
+/*
    IMPORTAÇÃO YUPOO
-===================================================== */
+*/
 const urlInput = document.getElementById("yupooUrl");
 const defaultPriceInput = document.getElementById("defaultPrice");
 const statusBox = document.getElementById("importStatus");
@@ -256,9 +351,9 @@ function logStatus(msg) {
   dashLog(msg);
 }
 
-/* =====================================================
+/*
    FUNÇÃO DE CÁLCULO DE PREÇO
-===================================================== */
+*/
 function arredondaPreco(preco) {
   // transforma em múltiplo de 5
   const multiplo5 = Math.round(preco / 5) * 5;
@@ -284,12 +379,10 @@ function calcularPreco(rawYuan, finalBRL, defaultPrice) {
 }
 
 
-/* =====================================================
+/*
    FUNÇÃO DE DETECÇÃO DE CATEGORIA
-===================================================== */
-// =====================================================
+*/
 // FUNÇÃO DE DETECÇÃO DE CATEGORIA (USANDO IA + TÍTULO)
-// =====================================================
 function detectarCategoria(title, rawCategory) {
   const t = (title || "").toLowerCase();
   const c = (rawCategory || "").toLowerCase();
@@ -331,60 +424,138 @@ function detectarCategoria(title, rawCategory) {
   return { category: "others", label: "Outros" };
 }
 
-/* =====================================================
+/*
    FUNÇÃO IMPORTAR
-===================================================== */
+*/
 async function importar() {
   const url = urlInput.value.trim();
   const defaultPrice = parseFloat(defaultPriceInput.value || "0") || 0;
-
-  if (!url) return alert("Cole o link da Yupoo.");
+  if (!url) {
+    showToast('Cole o link da Yupoo.', 'error');
+    return;
+  }
 
   statusBox.textContent = "";
   logStatus("Importando álbum...");
 
-  const res = await fetch("/api/import-yupoo", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url })
-  });
+  try {
+    // disable import button to prevent duplicate requests
+    if (importBtn) importBtn.disabled = true;
+    showSpinner();
 
-  if (!res.ok) {
-    logStatus("Erro na API: " + res.status);
-    return;
+    const res = await fetch("/api/import/yupoo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url })
+    });
+
+    if (!res.ok) {
+      const txt = await res.text();
+      logStatus("Erro na API: " + res.status + " - " + txt);
+      showToast('Erro ao importar: ' + res.status, 'error');
+      return;
+    }
+
+    const json = await res.json();
+    const data = json?.data || json || {};
+
+    logStatus("Título bruto: " + (data.rawTitle || data.title || '—'));
+    logStatus("Título final: " + (data.title || '—'));
+    logStatus("Fotos: " + (data.images ? data.images.length : 0));
+
+    const rawPrice = data.priceYuan || data.rawPriceYuan || 0;
+    const finalPrice = calcularPreco(rawPrice, data.finalPriceBRL, defaultPrice);
+    logStatus("Preço em Yuan: " + rawPrice);
+    logStatus("Preço final em R$: " + finalPrice.toFixed(2).replace('.', ','));
+
+    const { category, label } = detectarCategoria(data.title, data.category);
+
+    // Show preview and wait for user confirmation before saving
+    const previewEl = document.getElementById('importPreview');
+    const previewTitle = document.getElementById('previewTitle');
+    const previewImages = document.getElementById('previewImages');
+    const previewPrice = document.getElementById('previewPrice');
+    const confirmBtn = document.getElementById('confirmSaveBtn');
+    const cancelBtn = document.getElementById('cancelPreviewBtn');
+
+    if (previewEl) {
+      console.log('[IMPORT] mostrando preview, imagens:', (data.images || []).length);
+      previewTitle.textContent = data.title || '';
+      previewPrice.textContent = 'R$ ' + Number(finalPrice || 0).toFixed(2).replace('.', ',');
+      previewImages.innerHTML = (data.images || [])
+        .slice(0, 12)
+        .map((src) => `<img src="${src}" class="preview-thumb" loading="lazy" alt="preview">`)
+        .join('');
+      previewEl.style.display = 'block';
+      // garantir que o usuário veja o painel de preview
+      try { previewEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { /* ignore */ }
+    } else {
+      console.warn('[IMPORT] elemento #importPreview não encontrado no DOM');
+    }
+
+    const payload = {
+      title: data.title,
+      price: finalPrice,
+      rawPriceYuan: rawPrice,
+      images: data.images || [],
+      category,
+      categoryLabel: label,
+      source: "yupoo",
+      createdAt: new Date()
+    };
+
+    if (confirmBtn) {
+      confirmBtn.onclick = async () => {
+        try {
+          // prevent duplicate clicks
+          confirmBtn.disabled = true;
+          showSpinner();
+          await createProduct(payload);
+          logStatus('Produto salvo com sucesso!');
+          showToast('Produto importado e salvo com sucesso!', 'success');
+          previewEl.style.display = 'none';
+          urlInput.value = '';
+          await loadProducts(true);
+        } catch (err) {
+          console.error('Erro salvar:', err);
+          showToast('Erro ao salvar produto', 'error');
+          logStatus('Erro ao salvar produto: ' + (err.message || err));
+        } finally {
+          hideSpinner();
+          confirmBtn.disabled = false;
+        }
+      };
+    }
+
+    if (cancelBtn) {
+      cancelBtn.onclick = () => {
+        if (previewEl) previewEl.style.display = 'none';
+      };
+    }
+  } catch (err) {
+    console.error('Erro importar:', err);
+    logStatus('Erro ao importar: ' + (err.message || err));
+    showToast('Erro ao importar produto', 'error');
+  } finally {
+    hideSpinner();
+    if (importBtn) importBtn.disabled = false;
   }
+}
 
-  const data = await res.json();
-
-  logStatus("Título bruto: " + data.rawTitle);
-  logStatus("Título final: " + data.title);
-  logStatus("Fotos: " + data.images.length);
-
-  const rawPrice = data.rawPriceYuan || null;
-  const finalPrice = calcularPreco(rawPrice, data.finalPriceBRL, defaultPrice);
-
-  const { category, label } = detectarCategoria(data.title, data.category);
-
-  await createProduct({
-    title: data.title,
-    price: finalPrice,
-    rawPriceYuan: rawPrice,
-    images: data.images,
-    category,
-    categoryLabel: label,
-    source: "yupoo",
-    createdAt: new Date()
-  });
-
-  logStatus("Produto salvo com sucesso!");
-  loadProducts(true);
+// Setup validation for URL input (disables button until valid)
+try {
+  // keep import button disabled until validator enables it
+  if (importBtn) importBtn.disabled = true;
+  setupUrlValidation('#yupooUrl', '#importBtn');
+} catch (e) {
+  console.warn('Form validator not available', e);
 }
 
 if (importBtn) importBtn.addEventListener("click", importar);
 
-/* =====================================================
+/*
    CLIENTES
-===================================================== */
+*/
 let cachedCustomers = [];
 const customersList = document.getElementById("customersList");
 
@@ -446,9 +617,9 @@ async function loadCustomers() {
 //   loadCustomers();
 // });
 
-/* =====================================================
+/*
    CUPONS
-===================================================== */
+*/
 let cachedCoupons = [];
 const couponsList = document.getElementById("couponsList");
 
@@ -518,9 +689,9 @@ document.getElementById("createCouponBtn")?.addEventListener("click", async () =
   loadCoupons();
 });
 
-/* =====================================================
+/*
    PEDIDOS
-===================================================== */
+*/
 let cachedOrders = [];
 const ordersList = document.getElementById("ordersList");
 
@@ -606,18 +777,18 @@ document.getElementById("createOrderBtn")?.addEventListener("click", async () =>
   loadOrders();
 });
 
-/* =====================================================
+/*
    INIT
-===================================================== */
+*/
 loadSettings();
 loadCustomers();
 loadCoupons();
 loadProducts(true);
 loadOrders();
 
-/* =====================================================
+/*
    MODAL DO PEDIDO
-===================================================== */
+*/
 const modal = document.getElementById("orderModal");
 const modalCustomer = document.getElementById("modalCustomer");
 const modalWhatsapp = document.getElementById("modalWhatsapp");
@@ -681,6 +852,7 @@ function openOrderModal(order) {
       updatedAt: new Date().toISOString()
     });
 
+    const Swal = await getSwal();
     Swal.fire("OK!", "Pedido atualizado com sucesso.", "success");
     document.getElementById("orderModal").classList.add("hidden");
     loadOrders();
@@ -704,6 +876,7 @@ modalSaveBtn.onclick = async () => {
 
   await setDoc(ref, { status: modalStatus.value }, { merge: true });
 
+  const Swal = await getSwal();
   Swal.fire({
     icon: "success",
     title: "Status atualizado!",
@@ -714,9 +887,9 @@ modalSaveBtn.onclick = async () => {
   loadOrders();
 };
 
-/* =====================================================
+/*
    EVENTOS
-===================================================== */
+*/
 function attachOrderClickEvents() {
   document.querySelectorAll(".order-click").forEach((el) => {
     el.addEventListener("click", () => {
@@ -726,76 +899,3 @@ function attachOrderClickEvents() {
     });
   });
 }
-
-/* =====================================================
-   MODAL EDITAR PRODUTO
-===================================================== */
-
-import { updateDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-
-const productModal = document.getElementById("productModal");
-const editTitle = document.getElementById("editTitle");
-const editPrice = document.getElementById("editPrice");
-const editPromo = document.getElementById("editPromo");
-const editFinalPrice = document.getElementById("editFinalPrice");
-const saveProductBtn = document.getElementById("saveProductBtn");
-const closeProductModal = document.getElementById("closeProductModal");
-
-let currentProductId = null;
-
-function calcFinal(price, promo) {
-  if (!promo || promo <= 0) return Number(price).toFixed(2);
-  const n = price - (price * promo) / 100;
-  return n.toFixed(2);
-}
-
-function openProductModal(prod) {
-  currentProductId = prod.id;
-
-  editTitle.value = prod.title;
-  editPrice.value = prod.price;
-  editPromo.value = prod.promoPercent || 0;
-
-  editFinalPrice.textContent = "R$ " + calcFinal(prod.price, prod.promoPercent || 0);
-
-  productModal.classList.remove("hidden");
-}
-
-closeProductModal.addEventListener("click", () => {
-  productModal.classList.add("hidden");
-});
-
-editPromo.addEventListener("input", () => {
-  const p = Number(editPrice.value);
-  const promo = Number(editPromo.value);
-  editFinalPrice.textContent = "R$ " + calcFinal(p, promo);
-});
-
-saveProductBtn.addEventListener("click", async () => {
-  const title = editTitle.value.trim();
-  const price = Number(editPrice.value);
-  const promo = Number(editPromo.value);
-
-  const ref = doc(db, "products", currentProductId);
-
-  await updateDoc(ref, {
-    title,
-    price,
-    promoPercent: promo > 0 ? promo : null,
-    originalPrice: promo > 0 ? price : null
-  });
-
-  Swal.fire("OK!", "Produto atualizado com sucesso!", "success");
-
-  productModal.classList.add("hidden");
-  loadProducts(true);
-});
-
-/* abrir modal ao clicar no botão editar */
-listEl.addEventListener("click", (e) => {
-  if (e.target.classList.contains("admin-edit-btn")) {
-    const id = e.target.dataset.id;
-    const prod = cachedProducts.find((p) => p.id === id);
-    if (prod) openProductModal(prod);
-  }
-});

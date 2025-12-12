@@ -1,4 +1,4 @@
-// Substitua com as credenciais reais do seu projeto Firebase
+// Substituir com as credenciais reais do projeto Firebase
 export const firebaseConfig = {
   apiKey: "AIzaSyBoUOG0z7zqHCPvUvaNU1drTCYKqcx9bS4",
   authDomain: "hathorimports-b1155.firebaseapp.com",

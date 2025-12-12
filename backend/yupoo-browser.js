@@ -1,13 +1,13 @@
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import puppeteerCore from "puppeteer"; // 👈 IMPORTANTE !!!
+import puppeteerCore from "puppeteer"; // IMPORTANTE !!!
 
 puppeteer.use(StealthPlugin());
 
 export async function scrapeYupooBrowser(url) {
   const browser = await puppeteer.launch({
     headless: "new",
-    executablePath: puppeteerCore.executablePath(), // 👈 AQUI ESTÁ O FIX REAL
+    executablePath: puppeteerCore.executablePath(), // AQUI ESTÁ O FIX REAL
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",

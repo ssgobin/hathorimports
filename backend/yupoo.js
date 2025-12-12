@@ -1,9 +1,7 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 
-/* -------------------------------------------------
-   CLEANERS
---------------------------------------------------*/
+// CLEANERS
 function removeChinese(t) {
   return t.replace(/[\u4e00-\u9fff]/g, " ");
 }
@@ -27,9 +25,7 @@ function fallbackCleanTitle(rawTitle) {
   return normalizeSpaces(t) || "Sneaker Importado";
 }
 
-/* -------------------------------------------------
-   VALID IMAGE FILTER
---------------------------------------------------*/
+// VALID IMAGE FILTER
 function isValidImage(src) {
   if (!src) return false;
   if (!src.startsWith("http")) src = "https:" + src;
@@ -39,9 +35,7 @@ function isValidImage(src) {
   return /\.(jpg|jpeg|png|webp)/.test(s);
 }
 
-/* -------------------------------------------------
-   FETCH HTML
---------------------------------------------------*/
+// FETCH HTML
 async function fetchYupooHtml(url) {
   try {
     const res = await axios.get(url, {
@@ -59,9 +53,7 @@ async function fetchYupooHtml(url) {
   }
 }
 
-/* -------------------------------------------------
-   PRICE DETECTOR (SEM IA)
---------------------------------------------------*/
+// PRICE DETECTOR (SEM IA)
 function detectPrice(rawTitle) {
   // ¥260
   let m = rawTitle.match(/¥\s*([\d.]+)/i);
@@ -74,9 +66,7 @@ function detectPrice(rawTitle) {
   return null;
 }
 
-/* -------------------------------------------------
-   MAIN FUNCTION
---------------------------------------------------*/
+// MAIN FUNCTION
 export async function importFromYupoo(url) {
   console.log("[YUPOO] Importando:", url);
 

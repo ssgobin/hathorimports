@@ -6,7 +6,6 @@
   <title>Admin · Hathor Imports</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="./assets/style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     .card {
       background-color: #000000;
@@ -106,6 +105,17 @@
           <button id="importBtn" class="btn-primary full">Importar álbum</button>
 
           <pre id="importStatus" class="status-box"></pre>
+
+          <div id="importPreview" class="card" style="margin-top:12px; display:none;">
+            <h3>Pré-visualização</h3>
+            <p id="previewTitle" style="font-weight:600;"></p>
+            <div id="previewImages" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>
+            <p style="margin-top:8px">Preço sugerido: <strong id="previewPrice"></strong></p>
+            <div style="margin-top:8px;display:flex;gap:8px;">
+              <button id="confirmSaveBtn" class="btn-primary">Confirmar e Salvar</button>
+              <button id="cancelPreviewBtn" class="btn-outline">Cancelar</button>
+            </div>
+          </div>
         </div>
       </section>
 

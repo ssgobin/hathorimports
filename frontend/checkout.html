@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <link rel="stylesheet" href="./assets/style.css" />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         .checkout-container {
@@ -215,6 +214,7 @@
 
     <script type="module">
         import { createOrder } from "./js/store.js";
+        import { getSwal } from "./js/swal-loader.js";
 
         const summaryItemsEl = document.getElementById("summaryItems");
         const summaryTotalEl = document.getElementById("summaryTotal");
@@ -357,6 +357,7 @@
             const paymentMethod = document.getElementById("paymentMethod")?.value || "a definir";
 
             if (!paymentMethod) {
+                const Swal = await getSwal();
                 Swal.fire("Atenção", "Selecione um método de pagamento.", "warning");
                 return;
             }
@@ -396,6 +397,7 @@
 
             localStorage.removeItem("cart");
 
+            const Swal = await getSwal();
             Swal.fire({
                 icon: "success",
                 title: "Pedido concluído!",
