@@ -409,22 +409,26 @@ if (importBtn) importBtn.addEventListener("click", importar);
 /* =====================================================
    CLIENTES
 ===================================================== */
+
+
 let cachedCustomers = [];
 const customersList = document.getElementById("customersList");
 
 async function loadCustomers() {
+  if (!customersList) return;
+
+  customersList.innerHTML = "Carregando clientes...";
+
   const usersRef = collection(db, "users");
   const q = query(usersRef, where("role", "==", "customer"));
   const snap = await getDocs(q);
 
-  const customers = snap.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
+  const customers = snap.docs.map(d => ({
+    id: d.id,
+    ...d.data()
   }));
 
   cachedCustomers = customers;
-
-  if (!customersList) return;
 
   if (!customers.length) {
     customersList.innerHTML =
@@ -432,21 +436,20 @@ async function loadCustomers() {
     return;
   }
 
-  customersList.innerHTML = customers
-    .map((c) => {
-      return `
-        <div class="admin-list-item">
-          <strong>${c.name}</strong> · ${c.whatsapp || "-"}<br/>
-          ${c.email ? c.email + "<br/>" : ""}
-          ${c.notes ? "<span>" + c.notes + "</span>" : ""}
-          <br/><span style='font-size:0.75rem;color:#999'>${c.createdAt || ""}</span>
-        </div>
-      `;
-    })
-    .join("");
+  customersList.innerHTML = customers.map(c => `
+    <div class="admin-list-item">
+      <strong>${c.name || "Sem nome"}</strong><br/>
+      📧 ${c.email || "-"}<br/>
+      📱 ${c.whatsapp || "-"}<br/>
+      <span style="font-size:0.75rem;color:#aaa">
+        UID: ${c.uid || c.id}
+      </span>
+    </div>
+  `).join("");
 
-  await populateSelectsForOrders();
+  populateSelectsForOrders();
 }
+
 
 
 document.getElementById("createCustomerBtn")?.addEventListener("click", async () => {
