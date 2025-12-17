@@ -6,22 +6,75 @@
   <title>Catálogo · Hathor Imports</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="./assets/style.css" />
+  <style>
+    .filters h3 {
+      margin-bottom: 12px;
+    }
+
+    .filters label {
+      font-size: 14px;
+      margin-top: 12px;
+      display: block;
+    }
+
+    .filters select,
+    .filters button {
+      width: 100%;
+      margin-top: 6px;
+      padding: 8px;
+      border-radius: 8px;
+    }
+
+    .filters button {
+      margin-top: 16px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 
 <body>
 
   <script src="/js/loadHeader.js" defer></script>
-  
+
   <script type="module" src="./js/home-page.js"></script>
   <main class="page">
 
     <section class="catalog-section">
-      <h2>Todos os produtos</h2><br>
+      <div class="catalog-layout">
 
-      <input id="searchInput" type="text" placeholder="Buscar por nome, categoria..." class="search-bar"
-        style="width:100%;padding:10px;margin-bottom:14px;border-radius:8px;display: none;">
+        <!-- FILTROS -->
+        <aside class="filters">
+          <h3>Filtrar</h3>
 
-      <div id="storeList" class="product-grid"></div>
+          <label>Marca</label>
+          <select id="filterBrand">
+            <option value="">Todas</option>
+          </select>
+
+          <label>Modelo</label>
+          <select id="filterModel">
+            <option value="">Todos</option>
+          </select>
+
+          <button id="clearFilters">Limpar filtros</button>
+          <br>
+          <br>
+          <input id="searchInput" type="text" placeholder="Buscar por nome, categoria..." class="search-bar"
+        style="width:100%;padding:10px;margin-bottom:14px;border-radius:8px;">
+        </aside>
+        <br><br>
+
+        <!-- PRODUTOS -->
+        <div id="storeList" class="product-grid"></div>
+
+        <h2 style="display: none;">Todos os produtos</h2><br>
+
+        
+
+        <div id="storeList" class="product-grid"></div>
+
+
+      </div>
     </section>
 
     <br>
@@ -33,6 +86,10 @@
 
     const list = document.getElementById("storeList");
     const searchInput = document.getElementById("searchInput");
+    const filterBrand = document.getElementById("filterBrand");
+    const filterModel = document.getElementById("filterModel");
+    const clearFilters = document.getElementById("clearFilters");
+
     let cache = [];
 
     async function load() {
@@ -40,14 +97,16 @@
 
       if (cached && cached.length) {
         cache = cached;
+        populateFilters(cache);
         render(cache);
         return;
       }
 
-      // fallback (primeira visita ou cache expirado)
       cache = await listProducts();
+      populateFilters(cache);
       render(cache);
     }
+
 
     function render(items) {
       if (!items.length) {
@@ -98,6 +157,81 @@
       );
       render(filtered);
     });
+    function populateFilters(products) {
+      const brands = new Set();
+      const models = new Set();
+
+      products.forEach(p => {
+        if (p.brand && typeof p.brand === "string") {
+          brands.add(p.brand);
+        }
+
+        if (p.model && typeof p.model === "string") {
+          models.add(p.model);
+        }
+      });
+
+      filterBrand.innerHTML =
+        `<option value="">Todas</option>` +
+        [...brands].sort().map(b =>
+          `<option value="${b}">${b}</option>`
+        ).join("");
+
+      filterModel.innerHTML =
+        `<option value="">Todos</option>` +
+        [...models].sort().map(m =>
+          `<option value="${m}">${m}</option>`
+        ).join("");
+    }
+
+
+    function applyFilters() {
+      const selectedBrand = filterBrand.value;
+      const selectedModel = filterModel.value;
+
+      const filtered = cache.filter(p => {
+        if (selectedBrand && p.brand !== selectedBrand) return false;
+        if (selectedModel && p.model !== selectedModel) return false;
+        return true;
+      });
+
+      render(filtered);
+    }
+
+
+    filterModel.addEventListener("change", applyFilters);
+
+    clearFilters.addEventListener("click", () => {
+      filterBrand.value = "";
+      filterModel.value = "";
+      render(cache);
+    });
+
+    filterBrand.addEventListener("change", () => {
+      const brand = filterBrand.value;
+
+      const models = new Set();
+
+      cache.forEach(p => {
+        if (
+          (!brand || p.brand === brand) &&
+          p.model &&
+          typeof p.model === "string"
+        ) {
+          models.add(p.model);
+        }
+      });
+
+      filterModel.innerHTML =
+        `<option value="">Todos</option>` +
+        [...models].sort().map(m =>
+          `<option value="${m}">${m}</option>`
+        ).join("");
+
+      applyFilters();
+    });
+
+
 
     load();
   </script>

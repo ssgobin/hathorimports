@@ -38,6 +38,7 @@ async function loadHighlight() {
 
 
       return `
+      <a href="./product.html?id=${p.id}" class="product-link">
 <div class="product-card ${hasPromo ? "promo" : ""}" style="min-width:220px;">
   ${hasPromo ? `<div class="promo-badge">${desconto}% OFF</div>` : ""}
   <img src="${img}" class="product-thumb" />
@@ -54,8 +55,8 @@ async function loadHighlight() {
     `}
   </div>
 
-  <a href="./product.html?id=${p.id}" class="product-link">Ver detalhes</a>
 </div>
+</a>
 `;
 
     }).join("");
@@ -71,17 +72,5 @@ document.getElementById("logoutBtn")?.addEventListener("click", async () => {
 });
 
 loadHighlight();
-
-setTimeout(async () => {
-  await prefetchProducts();
-
-  const cached = JSON.parse(
-    localStorage.getItem("products_cache_v1") || "null"
-  );
-
-  if (cached?.data?.length) {
-    preloadProductImages(cached.data, 12);
-  }
-}, 900);
 
 

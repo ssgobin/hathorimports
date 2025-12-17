@@ -119,29 +119,61 @@ async function analyzeTitleWithAI(rawTitle) {
   console.log("======================\n");
 
   const prompt = `
-Você é uma IA especialista em entender produtos de álbuns da Yupoo.
+Você é uma IA especialista em análise e normalização de produtos importados de álbuns da Yupoo.
 
-A partir do título bruto do álbum (que pode ter emojis, chinês, códigos, valores etc),
-retorne APENAS um JSON com o formato EXATO abaixo, sem texto antes ou depois:
+Sua tarefa é interpretar um TÍTULO BRUTO de álbum (que pode conter emojis, chinês, códigos, batches, valores soltos, símbolos ou ruído)
+e retornar APENAS um JSON válido no formato EXATO abaixo, sem nenhum texto antes ou depois.
 
+FORMATO OBRIGATÓRIO:
 {
-  "title": "Título final curto e padronizado (PT/EN)",
-  "brand": "Marca principal (Nike, Adidas, NB, Yeezy...) ou 'Genérico'",
+  "title": "Título final curto, limpo e padronizado (PT ou EN)",
+  "brand": "Marca principal (Nike, Adidas, New Balance, Yeezy, Puma, Jordan, Oakley etc) ou 'Genérico'",
   "category": "sneakers | roupas | acessorios | bolsas | oculos | relogios | outros",
-  "subtype": "Modelo específico (Dunk Low, Jordan 4, Hoodie, Bag)",
+  "subtype": "Modelo específico e reconhecível (ex: Dunk Low Panda, Air Jordan 4 Military Black, Hoodie Essentials)",
   "priceYuan": 260
 }
 
-Regras:
-- Extraia preço do título se encontrar: ¥260, ￥169, 169, 280, etc.
-- NÃO invente valores. Use apenas o que realmente aparecer.
-- Se não encontrar nenhum valor, deixe priceYuan = null.
-- Retorne apenas JSON puro.
-- Não quero coisas em chinês, não quero as batches, não quero códigos de produto.
-- Se for um tênis, descubra o nome exato do modelo (por exemplo: Dunk StrangeLove)
+REGRAS CRÍTICAS (OBRIGATÓRIAS):
+- Retorne SOMENTE o JSON. Nenhuma explicação, comentário ou texto extra.
+- NÃO invente informações.
+- NÃO traduza ou retorne palavras em chinês.
+- Ignore completamente:
+  - batches (ex: PK, LJR, OG, LW, VT)
+  - códigos de produto
+  - emojis irrelevantes
+  - termos genéricos como “top quality”, “best version”, “factory”
+- O campo "title" deve ser:
+  - curto
+  - comercial
+  - sem cores extras se não forem essenciais
+  - sem palavras genéricas como “replica”, “1:1”, “imported”
+- Se for um TÊNIS:
+  - O campo "brand" é OBRIGATÓRIO
+  - O campo "subtype" é OBRIGATÓRIO
+  - "brand" deve ser apenas a marca principal (ex: Nike, Adidas, Jordan)
+  - "subtype" deve conter o modelo oficial completo (ex: Dunk Low Panda, Air Jordan 4 Military Black)
+- EXTRAÇÃO DE PREÇO:
+  - Extraia o valor SOMENTE se ele aparecer explicitamente no título
+  - Exemplos válidos: ¥260, ￥169, 169, 280
+  - Se houver mais de um número, escolha o mais provável como preço
+  - Se NÃO houver preço claro → priceYuan = null
+- O campo "priceYuan" deve ser:
+  - número inteiro
+  - sem conversão
+  - sem arredondamento
+- Classificação de categoria:
+  - sneakers → tênis
+  - roupas → camisetas, moletons, jaquetas, calças
+  - acessorios → bonés, cintos, meias
+  - bolsas → mochilas, shoulder bags, handbags
+  - oculos → óculos de sol ou grau
+  - relogios → relógios
+  - outros → apenas se não se encaixar em nenhum acima
 
-Título bruto: "${rawTitle}"
-JSON:
+TÍTULO BRUTO DO ÁLBUM:
+"${rawTitle}"
+
+RETORNE APENAS O JSON:
 `;
 
   try {
@@ -204,6 +236,34 @@ function normalizeCategory(aiCat, title) {
   return { category, categoryLabel: label };
 }
 
+function detectBrandByTitle(title) {
+  const t = title.toLowerCase();
+
+  if (t.includes("nike") || t.includes("air max") || t.includes("air force"))
+    return "Nike";
+
+  if (t.includes("jordan") || t.includes("aj"))
+    return "Jordan";
+
+  if (t.includes("adidas") || t.includes("yeezy"))
+    return "Adidas";
+
+  if (t.includes("new balance") || t.includes("nb"))
+    return "New Balance";
+
+  if (t.includes("puma"))
+    return "Puma";
+
+  if (t.includes("asics"))
+    return "Asics";
+
+  if (t.includes("oakley"))
+    return "Oakley";
+
+  return "Genérico";
+}
+
+
 /* -------------------------------------------------
    FUNÇÃO PRINCIPAL
 --------------------------------------------------*/
@@ -259,15 +319,20 @@ export async function importFromYupoo(url) {
     ? Math.round(((rawPriceYuan * COT) * MARGEM + FRETE + DECL) * 100) / 100
     : null;
 
+  const brand =
+    ai?.brand ||
+    detectBrandByTitle(finalTitle);
+
   return {
     rawTitle,
     title: finalTitle,
-    brand: ai?.brand || null,
-    subtype: ai?.subtype || null,
+    brand,
+    model: ai?.subtype || null,
     category,
     categoryLabel,
     images: images.slice(0, 12),
     rawPriceYuan,
     finalPriceBRL
   };
+
 }

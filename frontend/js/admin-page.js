@@ -49,6 +49,7 @@ handleAuthButtons();
 const menuItems = document.querySelectorAll(".admin-menu-item");
 const views = document.querySelectorAll(".admin-view");
 const titleEl = document.getElementById("adminTitle");
+let pendingImport = null;
 
 menuItems.forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -355,7 +356,10 @@ async function importar() {
     return;
   }
 
+
+
   const data = await res.json();
+  console.log("DEBUG IMPORT API:", data);
 
   logStatus("Título bruto: " + data.rawTitle);
   logStatus("Título final: " + data.title);
@@ -366,19 +370,38 @@ async function importar() {
 
   const { category, label } = detectarCategoria(data.title, data.category);
 
-  await createProduct({
+  pendingImport = {
     title: data.title,
     price: finalPrice,
     rawPriceYuan: rawPrice,
     images: data.images,
     category,
     categoryLabel: label,
-    source: "yupoo",
-    createdAt: new Date()
-  });
+    brand: data.brand || "Genérico",
+    model: data.model || null
+  };
 
-  logStatus("Produto salvo com sucesso!");
-  loadProducts(true);
+
+  // preencher modal
+  document.getElementById("previewTitle").value = pendingImport.title;
+  document.getElementById("previewPrice").value = pendingImport.price;
+  document.getElementById("previewCategory").value = pendingImport.category;
+  document.getElementById("previewBrand").value = pendingImport.brand || "";
+  document.getElementById("previewModel").value = pendingImport.model || "";
+
+  // imagens
+  const imgBox = document.getElementById("previewImages");
+  imgBox.innerHTML = pendingImport.images
+    .slice(0, 6)
+    .map(
+      (src) =>
+        `<img src="${src}" style="width:90px;height:90px;object-fit:cover;border-radius:8px">`
+    )
+    .join("");
+
+  // abrir modal
+  document.getElementById("previewModal").classList.remove("hidden");
+
 }
 
 if (importBtn) importBtn.addEventListener("click", importar);
@@ -814,10 +837,13 @@ document.addEventListener("click", async (e) => {
 
   await updateDoc(ref, {
     title,
-    originalPrice,     // 🔥 sempre salvo!
+    originalPrice,
     promoPercent,
-    price: newFinalPrice
+    price: newFinalPrice,
+    brand: prod.brand || "Genérico",
+    model: prod.model || null
   });
+
 
   Swal.fire("Sucesso!", "Produto atualizado!", "success");
 
@@ -859,4 +885,32 @@ window.toggleDestaque = async (id) => {
 
   await updateDoc(ref, { destaque: newValue });
   loadProducts();
+};
+
+document.getElementById("confirmImportBtn").onclick = async () => {
+  if (!pendingImport) return;
+
+  await createProduct({
+    title: document.getElementById("previewTitle").value.trim(),
+    price: Number(document.getElementById("previewPrice").value),
+    rawPriceYuan: pendingImport.rawPriceYuan,
+    images: pendingImport.images,
+    category: document.getElementById("previewCategory").value,
+    categoryLabel: pendingImport.categoryLabel,
+    brand: document.getElementById("previewBrand").value.trim() || "Genérico",
+    model: document.getElementById("previewModel").value.trim() || null,
+    source: "yupoo"
+  });
+
+  pendingImport = null;
+  document.getElementById("previewModal").classList.add("hidden");
+
+  Swal.fire("Sucesso!", "Produto importado com sucesso!", "success");
+  loadProducts(true);
+};
+
+
+document.getElementById("cancelImportBtn").onclick = () => {
+  pendingImport = null;
+  document.getElementById("previewModal").classList.add("hidden");
 };

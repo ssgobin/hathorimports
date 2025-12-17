@@ -19,6 +19,36 @@ async function loadProduct() {
   const id = params.get("id");
   if (!id) {
     container.innerHTML = "<p>ID inválido.</p>";
+    // ===== GALLERY INTERACTIONS =====
+
+    const mainImg = document.getElementById("mainImg");
+    const thumbs = document.querySelectorAll(".thumb");
+
+    // thumb ativa
+    thumbs.forEach((thumb) => {
+      thumb.onclick = () => {
+        thumbs.forEach(t => t.classList.remove("active"));
+        thumb.classList.add("active");
+        mainImg.src = thumb.src;
+      };
+    });
+
+    // ativa a primeira thumb
+    if (thumbs[0]) thumbs[0].classList.add("active");
+
+    // lightbox
+    mainImg.onclick = () => {
+      const lightbox = document.createElement("div");
+      lightbox.className = "lightbox";
+      lightbox.innerHTML = `
+    <span class="lightbox-close">✕</span>
+    <img src="${mainImg.src}">
+  `;
+      document.body.appendChild(lightbox);
+
+      lightbox.onclick = () => lightbox.remove();
+    };
+
     return;
   }
 
@@ -37,7 +67,7 @@ async function loadProduct() {
     <div class="product-container">
 
       <div class="gallery">
-        <img src="${main}" class="product-main-img" id="mainImg"/>
+        <img src="${main}" class="product-main-img" id="mainImg" />
 
         <div class="thumbs">
           ${imgs

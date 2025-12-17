@@ -41,11 +41,27 @@ export async function getProduct(id) {
 
 export async function createProduct(data) {
   const now = new Date();
-  return addDoc(productsCol, {
-    ...data,
+
+  const payload = {
+    title: data.title,
+    price: data.price,
+    images: data.images || [],
+    category: data.category,
+    categoryLabel: data.categoryLabel,
+    source: data.source || "manual",
+
+    brand: data.brand || "Genérico",
+    model: data.model || null,
+    rawPriceYuan: data.rawPriceYuan || null,
+
     createdAt: now
-  });
+  };
+
+  console.log("🧾 PRODUTO SALVO:", payload);
+
+  return addDoc(productsCol, payload);
 }
+
 
 export async function deleteProduct(productId) {
   const ref = doc(db, "products", productId);
