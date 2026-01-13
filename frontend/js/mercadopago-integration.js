@@ -131,15 +131,18 @@ async function openMercadoPagoCheckout(customerData, shippingData) {
     // Ocultar loading
     hideLoading();
 
-    // Abrir checkout
-    mp.checkout({
-      preference: {
-        id: preference.preferenceId
-      },
-      autoOpen: true
-    });
+    // Redirecionar para o checkout do Mercado Pago
+    // Usar sandboxInitPoint para testes, initPoint para produção
+    const checkoutUrl = preference.sandboxInitPoint || preference.initPoint;
+    
+    if (!checkoutUrl) {
+      throw new Error('URL do checkout não foi retornada');
+    }
 
-    console.log('🚀 Checkout do Mercado Pago aberto');
+    console.log('🚀 Redirecionando para checkout do Mercado Pago:', checkoutUrl);
+    
+    // Redirecionar para a página de pagamento
+    window.location.href = checkoutUrl;
 
   } catch (error) {
     hideLoading();

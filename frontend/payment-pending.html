@@ -1,237 +1,339 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pagamento Pendente - Hathor Imports</title>
-  <link rel="stylesheet" href="assets/style.css">
-  <style>
-    .payment-result {
-      max-width: 600px;
-      margin: 80px auto;
-      padding: 40px 20px;
-      text-align: center;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pagamento Pendente - Hathor Imports</title>
+    <link rel="stylesheet" href="assets/style.css" />
+    <style>
+      .payment-result {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        padding: 20px;
+      }
 
-    .result-icon {
-      font-size: 80px;
-      margin-bottom: 24px;
-      animation: pulse 2s ease-in-out infinite;
-    }
+      .result-card {
+        background: white;
+        border-radius: 20px;
+        padding: 60px 40px;
+        max-width: 600px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
 
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.1); opacity: 0.8; }
-    }
+      .result-icon {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 30px;
+        background: #f59e0b;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 60px;
+        animation: pulse 2s ease-in-out infinite;
+      }
 
-    .result-title {
-      font-size: 32px;
-      font-weight: 700;
-      color: #f59e0b;
-      margin-bottom: 16px;
-    }
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
 
-    .result-message {
-      font-size: 18px;
-      color: rgba(255, 255, 255, 0.8);
-      margin-bottom: 32px;
-      line-height: 1.6;
-    }
+      .result-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 15px;
+      }
 
-    .result-info {
-      background: rgba(245, 158, 11, 0.1);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 32px;
-      text-align: left;
-    }
+      .result-message {
+        font-size: 18px;
+        color: #6b7280;
+        margin-bottom: 30px;
+        line-height: 1.6;
+      }
 
-    .info-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #f59e0b;
-      margin-bottom: 16px;
-    }
+      .pending-info {
+        background: #fffbeb;
+        border: 2px solid #fde68a;
+        border-radius: 12px;
+        padding: 25px;
+        margin: 30px 0;
+        text-align: left;
+      }
 
-    .info-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
+      .info-title {
+        font-weight: 600;
+        color: #92400e;
+        margin-bottom: 15px;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
 
-    .info-list li {
-      padding: 8px 0;
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 14px;
-    }
+      .info-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
 
-    .info-list li::before {
-      content: "✓ ";
-      color: #f59e0b;
-      font-weight: bold;
-      margin-right: 8px;
-    }
+      .info-list li {
+        padding: 8px 0;
+        color: #78350f;
+        display: flex;
+        align-items: flex-start;
+      }
 
-    .result-details {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 32px;
-      text-align: left;
-    }
+      .info-list li::before {
+        content: "ℹ️";
+        margin-right: 10px;
+      }
 
-    .detail-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
+      .payment-details {
+        background: #f9fafb;
+        border-radius: 12px;
+        padding: 25px;
+        margin: 30px 0;
+        text-align: left;
+      }
 
-    .detail-row:last-child {
-      border-bottom: none;
-    }
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
 
-    .detail-label {
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 14px;
-    }
+      .detail-row:last-child {
+        border-bottom: none;
+      }
 
-    .detail-value {
-      color: #fff;
-      font-weight: 600;
-      font-size: 14px;
-    }
+      .detail-label {
+        font-weight: 600;
+        color: #4b5563;
+      }
 
-    .result-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+      .detail-value {
+        color: #1f2937;
+        font-weight: 500;
+      }
 
-    .btn-primary-result {
-      padding: 16px 32px;
-      background: linear-gradient(135deg, #ff007a, #ff5e00);
-      border: none;
-      border-radius: 12px;
-      color: #fff;
-      font-size: 16px;
-      font-weight: 700;
-      text-decoration: none;
-      display: inline-block;
-      transition: all 0.3s ease;
-    }
+      .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        background: #fef3c7;
+        color: #92400e;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+      }
 
-    .btn-primary-result:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 30px rgba(255, 0, 122, 0.4);
-    }
+      .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+      }
 
-    .btn-secondary-result {
-      padding: 14px 32px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
-      text-decoration: none;
-      display: inline-block;
-      transition: all 0.2s ease;
-    }
+      .btn {
+        flex: 1;
+        padding: 16px 24px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+      }
 
-    .btn-secondary-result:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
-  </style>
-</head>
-<body>
-  <!-- Header será carregado dinamicamente -->
-  <div id="header-container"></div>
+      .btn-primary {
+        background: #f59e0b;
+        color: white;
+      }
 
-  <main class="payment-result">
-    <div class="result-icon">⏳</div>
-    <h1 class="result-title">Pagamento Pendente</h1>
-    <p class="result-message">
-      Seu pagamento está sendo processado.<br>
-      Você receberá uma confirmação em breve.
-    </p>
+      .btn-primary:hover {
+        background: #d97706;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+      }
 
-    <div class="result-info">
-      <div class="info-title">O que acontece agora?</div>
-      <ul class="info-list">
-        <li>Estamos aguardando a confirmação do pagamento</li>
-        <li>Você receberá um e-mail assim que for aprovado</li>
-        <li>O prazo pode variar de acordo com o método de pagamento</li>
-        <li>Seu pedido será processado após a confirmação</li>
-      </ul>
+      .btn-secondary {
+        background: white;
+        color: #f59e0b;
+        border: 2px solid #f59e0b;
+      }
+
+      .btn-secondary:hover {
+        background: #fffbeb;
+      }
+
+      .next-steps {
+        background: #f0f9ff;
+        border-left: 4px solid #3b82f6;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 30px 0;
+        text-align: left;
+      }
+
+      .next-steps h3 {
+        color: #1e40af;
+        margin-bottom: 15px;
+        font-size: 18px;
+      }
+
+      .next-steps ol {
+        margin: 0;
+        padding-left: 20px;
+        color: #1e3a8a;
+      }
+
+      .next-steps li {
+        margin: 10px 0;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="payment-result">
+      <div class="result-card">
+        <div class="result-icon">⏳</div>
+
+        <h1 class="result-title">Pagamento Pendente</h1>
+        <p class="result-message">
+          Seu pagamento está sendo processado. Você receberá uma confirmação
+          assim que for aprovado.
+        </p>
+
+        <div class="pending-info">
+          <div class="info-title">
+            <span>⚠️</span>
+            <span>O que isso significa?</span>
+          </div>
+          <ul class="info-list">
+            <li>Seu pedido foi registrado com sucesso</li>
+            <li>O pagamento está aguardando confirmação</li>
+            <li>Você receberá um email quando for aprovado</li>
+            <li>Pode levar até 48 horas para processar</li>
+          </ul>
+        </div>
+
+        <div class="payment-details" id="payment-details">
+          <div class="detail-row">
+            <span class="detail-label">Status:</span>
+            <span class="detail-value">
+              <span class="status-badge">Aguardando Confirmação</span>
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Data:</span>
+            <span class="detail-value"
+              >${new Date().toLocaleString('pt-BR')}</span
+            >
+          </div>
+        </div>
+
+        <div class="next-steps">
+          <h3>📋 Próximos Passos</h3>
+          <ol>
+            <li>Aguarde a confirmação do pagamento por email</li>
+            <li>Verifique sua caixa de entrada e spam</li>
+            <li>Entre em contato conosco se tiver dúvidas</li>
+            <li>Acompanhe o status do pedido em "Meus Pedidos"</li>
+          </ol>
+        </div>
+
+        <div class="action-buttons">
+          <a href="store.html" class="btn btn-secondary">
+            Continuar Comprando
+          </a>
+          <a href="index.html" class="btn btn-primary"> Voltar ao Início </a>
+        </div>
+      </div>
     </div>
 
-    <div class="result-details" id="payment-details">
-      <div class="detail-row">
-        <span class="detail-label">Status</span>
-        <span class="detail-value" style="color: #f59e0b;">Pendente</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">ID do Pagamento</span>
-        <span class="detail-value" id="payment-id">-</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">Valor</span>
-        <span class="detail-value" id="payment-amount">-</span>
-      </div>
-    </div>
+    <script type="module">
+      // Obter parâmetros da URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const paymentId = urlParams.get("payment_id");
+      const status = urlParams.get("status");
+      const statusDetail = urlParams.get("status_detail");
+      const externalReference = urlParams.get("external_reference");
 
-    <div class="result-actions">
-      <a href="index.html" class="btn-primary-result">
-        🏠 Voltar para Início
-      </a>
-      <a href="store.html" class="btn-secondary-result">
-        🛍️ Continuar Comprando
-      </a>
-    </div>
-  </main>
+      // Atualizar detalhes se houver informações
+      const detailsContainer = document.getElementById("payment-details");
 
-  <!-- Toast Container -->
-  <div id="toast-container"></div>
+      if (paymentId) {
+        const detailsHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">ID do Pagamento:</span>
+                    <span class="detail-value">${paymentId}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value">
+                        <span class="status-badge">Aguardando Confirmação</span>
+                    </span>
+                </div>
+                ${
+                  statusDetail
+                    ? `
+                <div class="detail-row">
+                    <span class="detail-label">Detalhes:</span>
+                    <span class="detail-value">${getStatusDetailMessage(
+                      statusDetail
+                    )}</span>
+                </div>
+                `
+                    : ""
+                }
+                ${
+                  externalReference
+                    ? `
+                <div class="detail-row">
+                    <span class="detail-label">Número do Pedido:</span>
+                    <span class="detail-value">${externalReference}</span>
+                </div>
+                `
+                    : ""
+                }
+                <div class="detail-row">
+                    <span class="detail-label">Data:</span>
+                    <span class="detail-value">${new Date().toLocaleString(
+                      "pt-BR"
+                    )}</span>
+                </div>
+            `;
+        detailsContainer.innerHTML = detailsHTML;
+      }
 
-  <!-- Scripts -->
-  <script type="module">
-    import { loadHeader } from './js/loadHeader.js';
-    import { checkPaymentStatus } from './js/mercadopago-integration.js';
-    import { clearCart } from './js/cart-improved.js';
+      function getStatusDetailMessage(detail) {
+        const messages = {
+          pending_contingency: "Aguardando processamento",
+          pending_review_manual: "Em análise manual",
+          pending_waiting_payment: "Aguardando pagamento",
+          pending_waiting_transfer: "Aguardando transferência",
+        };
+        return messages[detail] || "Processando pagamento";
+      }
 
-    // Carregar header
-    loadHeader();
-
-    // Limpar carrinho (pagamento pendente ainda conta como pedido realizado)
-    clearCart();
-
-    // Obter parâmetros da URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const paymentId = urlParams.get('payment_id');
-    const status = urlParams.get('status');
-
-    // Exibir ID do pagamento
-    if (paymentId) {
-      document.getElementById('payment-id').textContent = paymentId;
-
-      // Buscar detalhes do pagamento
-      checkPaymentStatus(paymentId)
-        .then(payment => {
-          if (payment.transactionAmount) {
-            document.getElementById('payment-amount').textContent = 
-              new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              }).format(payment.transactionAmount);
-          }
-        })
-        .catch(err => {
-          console.error('Erro ao buscar detalhes:', err);
-        });
-    }
-  </script>
-</body>
+      // Não limpar carrinho ainda, pois pagamento está pendente
+      console.log("⏳ Pagamento pendente:", {
+        paymentId,
+        status,
+        statusDetail,
+        externalReference,
+      });
+    </script>
+  </body>
 </html>

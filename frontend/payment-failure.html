@@ -1,194 +1,290 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pagamento Recusado - Hathor Imports</title>
-  <link rel="stylesheet" href="assets/style.css">
-  <style>
-    .payment-result {
-      max-width: 600px;
-      margin: 80px auto;
-      padding: 40px 20px;
-      text-align: center;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pagamento Recusado - Hathor Imports</title>
+    <link rel="stylesheet" href="assets/style.css" />
+    <style>
+      .payment-result {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        padding: 20px;
+      }
 
-    .result-icon {
-      font-size: 80px;
-      margin-bottom: 24px;
-      animation: shake 0.5s ease-out;
-    }
+      .result-card {
+        background: white;
+        border-radius: 20px;
+        padding: 60px 40px;
+        max-width: 600px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
 
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
-      20%, 40%, 60%, 80% { transform: translateX(10px); }
-    }
+      .result-icon {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 30px;
+        background: #ef4444;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 60px;
+        animation: shake 0.5s ease-out;
+      }
 
-    .result-title {
-      font-size: 32px;
-      font-weight: 700;
-      color: #ef4444;
-      margin-bottom: 16px;
-    }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-10px);
+        }
+        75% {
+          transform: translateX(10px);
+        }
+      }
 
-    .result-message {
-      font-size: 18px;
-      color: rgba(255, 255, 255, 0.8);
-      margin-bottom: 32px;
-      line-height: 1.6;
-    }
+      .result-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 15px;
+      }
 
-    .result-reasons {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 32px;
-      text-align: left;
-    }
+      .result-message {
+        font-size: 18px;
+        color: #6b7280;
+        margin-bottom: 30px;
+        line-height: 1.6;
+      }
 
-    .reasons-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #ef4444;
-      margin-bottom: 16px;
-    }
+      .error-details {
+        background: #fef2f2;
+        border: 2px solid #fecaca;
+        border-radius: 12px;
+        padding: 25px;
+        margin: 30px 0;
+        text-align: left;
+      }
 
-    .reasons-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
+      .error-title {
+        font-weight: 600;
+        color: #991b1b;
+        margin-bottom: 15px;
+        font-size: 16px;
+      }
 
-    .reasons-list li {
-      padding: 8px 0;
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 14px;
-    }
+      .error-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
 
-    .reasons-list li::before {
-      content: "• ";
-      color: #ef4444;
-      font-weight: bold;
-      margin-right: 8px;
-    }
+      .error-list li {
+        padding: 8px 0;
+        color: #7f1d1d;
+        display: flex;
+        align-items: flex-start;
+      }
 
-    .result-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+      .error-list li::before {
+        content: "•";
+        margin-right: 10px;
+        font-weight: bold;
+      }
 
-    .btn-primary-result {
-      padding: 16px 32px;
-      background: linear-gradient(135deg, #ff007a, #ff5e00);
-      border: none;
-      border-radius: 12px;
-      color: #fff;
-      font-size: 16px;
-      font-weight: 700;
-      text-decoration: none;
-      display: inline-block;
-      transition: all 0.3s ease;
-    }
+      .payment-details {
+        background: #f9fafb;
+        border-radius: 12px;
+        padding: 25px;
+        margin: 30px 0;
+        text-align: left;
+      }
 
-    .btn-primary-result:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 30px rgba(255, 0, 122, 0.4);
-    }
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
 
-    .btn-secondary-result {
-      padding: 14px 32px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
-      text-decoration: none;
-      display: inline-block;
-      transition: all 0.2s ease;
-    }
+      .detail-row:last-child {
+        border-bottom: none;
+      }
 
-    .btn-secondary-result:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
+      .detail-label {
+        font-weight: 600;
+        color: #4b5563;
+      }
 
-    .help-box {
-      background: rgba(59, 130, 246, 0.1);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      border-radius: 12px;
-      padding: 16px;
-      margin-top: 24px;
-    }
+      .detail-value {
+        color: #1f2937;
+        font-weight: 500;
+      }
 
-    .help-text {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.8);
-      margin: 0;
-    }
-  </style>
-</head>
-<body>
-  <!-- Header será carregado dinamicamente -->
-  <div id="header-container"></div>
+      .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+      }
 
-  <main class="payment-result">
-    <div class="result-icon">❌</div>
-    <h1 class="result-title">Pagamento Recusado</h1>
-    <p class="result-message">
-      Infelizmente seu pagamento não pôde ser processado.<br>
-      Por favor, verifique os dados e tente novamente.
-    </p>
+      .btn {
+        flex: 1;
+        padding: 16px 24px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+      }
 
-    <div class="result-reasons">
-      <div class="reasons-title">Possíveis motivos:</div>
-      <ul class="reasons-list">
-        <li>Dados do cartão incorretos</li>
-        <li>Saldo insuficiente</li>
-        <li>Limite do cartão excedido</li>
-        <li>Cartão vencido ou bloqueado</li>
-        <li>Problemas com a operadora</li>
-      </ul>
+      .btn-primary {
+        background: #ef4444;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #dc2626;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+      }
+
+      .btn-secondary {
+        background: white;
+        color: #ef4444;
+        border: 2px solid #ef4444;
+      }
+
+      .btn-secondary:hover {
+        background: #fef2f2;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="payment-result">
+      <div class="result-card">
+        <div class="result-icon">❌</div>
+
+        <h1 class="result-title">Pagamento Recusado</h1>
+        <p class="result-message">
+          Infelizmente não foi possível processar seu pagamento. Por favor,
+          verifique os dados e tente novamente.
+        </p>
+
+        <div class="error-details">
+          <div class="error-title">Possíveis motivos:</div>
+          <ul class="error-list">
+            <li>Dados do cartão incorretos ou inválidos</li>
+            <li>Saldo insuficiente na conta</li>
+            <li>Cartão bloqueado ou vencido</li>
+            <li>Limite de crédito excedido</li>
+            <li>Problemas com a operadora do cartão</li>
+          </ul>
+        </div>
+
+        <div class="payment-details" id="payment-details">
+          <div class="detail-row">
+            <span class="detail-label">Status:</span>
+            <span class="detail-value" style="color: #ef4444">Recusado</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Data:</span>
+            <span class="detail-value"
+              >${new Date().toLocaleString('pt-BR')}</span
+            >
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <a href="cart.html" class="btn btn-secondary"> Ver Carrinho </a>
+          <a href="checkout.html" class="btn btn-primary"> Tentar Novamente </a>
+        </div>
+      </div>
     </div>
 
-    <div class="result-actions">
-      <a href="checkout.html" class="btn-primary-result">
-        🔄 Tentar Novamente
-      </a>
-      <a href="cart.html" class="btn-secondary-result">
-        🛒 Voltar ao Carrinho
-      </a>
-      <a href="index.html" class="btn-secondary-result">
-        🏠 Ir para Início
-      </a>
-    </div>
+    <script type="module">
+      // Obter parâmetros da URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const paymentId = urlParams.get("payment_id");
+      const status = urlParams.get("status");
+      const statusDetail = urlParams.get("status_detail");
+      const externalReference = urlParams.get("external_reference");
 
-    <div class="help-box">
-      <p class="help-text">
-        💬 <strong>Precisa de ajuda?</strong><br>
-        Entre em contato conosco pelo WhatsApp e finalize seu pedido diretamente.
-      </p>
-    </div>
-  </main>
+      // Atualizar detalhes se houver informações
+      const detailsContainer = document.getElementById("payment-details");
 
-  <!-- Toast Container -->
-  <div id="toast-container"></div>
+      if (paymentId) {
+        const detailsHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">ID da Tentativa:</span>
+                    <span class="detail-value">${paymentId}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value" style="color: #ef4444;">Recusado</span>
+                </div>
+                ${
+                  statusDetail
+                    ? `
+                <div class="detail-row">
+                    <span class="detail-label">Motivo:</span>
+                    <span class="detail-value">${getStatusDetailMessage(
+                      statusDetail
+                    )}</span>
+                </div>
+                `
+                    : ""
+                }
+                ${
+                  externalReference
+                    ? `
+                <div class="detail-row">
+                    <span class="detail-label">Referência:</span>
+                    <span class="detail-value">${externalReference}</span>
+                </div>
+                `
+                    : ""
+                }
+                <div class="detail-row">
+                    <span class="detail-label">Data:</span>
+                    <span class="detail-value">${new Date().toLocaleString(
+                      "pt-BR"
+                    )}</span>
+                </div>
+            `;
+        detailsContainer.innerHTML = detailsHTML;
+      }
 
-  <!-- Scripts -->
-  <script type="module">
-    import { loadHeader } from './js/loadHeader.js';
+      function getStatusDetailMessage(detail) {
+        const messages = {
+          cc_rejected_insufficient_amount: "Saldo insuficiente",
+          cc_rejected_bad_filled_card_number: "Número do cartão incorreto",
+          cc_rejected_bad_filled_date: "Data de validade incorreta",
+          cc_rejected_bad_filled_security_code: "Código de segurança incorreto",
+          cc_rejected_call_for_authorize: "Autorização necessária",
+          cc_rejected_card_disabled: "Cartão desabilitado",
+          cc_rejected_duplicated_payment: "Pagamento duplicado",
+          cc_rejected_high_risk: "Pagamento recusado por risco",
+          cc_rejected_max_attempts: "Máximo de tentativas excedido",
+        };
+        return messages[detail] || detail;
+      }
 
-    // Carregar header
-    loadHeader();
-
-    // Obter parâmetros da URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const paymentId = urlParams.get('payment_id');
-    const status = urlParams.get('status');
-
-    console.log('Pagamento recusado:', { paymentId, status });
-  </script>
-</body>
+      console.log("❌ Pagamento recusado:", {
+        paymentId,
+        status,
+        statusDetail,
+        externalReference,
+      });
+    </script>
+  </body>
 </html>
