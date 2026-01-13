@@ -3,20 +3,20 @@
  * Hathor Imports
  */
 
-import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
+import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
 
 // Validar variáveis de ambiente
 if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
-  console.warn('⚠️  MERCADOPAGO_ACCESS_TOKEN não configurado no .env');
+  console.warn("⚠️  MERCADOPAGO_ACCESS_TOKEN não configurado no .env");
 }
 
 // Inicializar cliente do Mercado Pago
 const client = new MercadoPagoConfig({
-  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || '',
+  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || "",
   options: {
     timeout: 5000,
-    idempotencyKey: 'hathor-imports'
-  }
+    idempotencyKey: "hathor-imports",
+  },
 });
 
 // Instâncias dos serviços
@@ -30,84 +30,95 @@ const payment = new Payment(client);
  */
 export async function createPaymentPreference(orderData) {
   try {
-    const {
-      items,
-      payer,
-      backUrls,
-      externalReference,
-      notificationUrl
-    } = orderData;
+    const { items, payer, backUrls, externalReference, notificationUrl } =
+      orderData;
+
+    // Debug: verificar o que está chegando
+    console.log('🔍 Debug - orderData recebido:', JSON.stringify(orderData, null, 2));
+    console.log('🔍 Debug - backUrls:', backUrls);
 
     const preferenceData = {
-      items: items.map(item => ({
+      items: items.map((item) => ({
         id: item.id,
         title: item.title,
-        description: item.description || '',
-        picture_url: item.image || '',
-        category_id: 'fashion',
+        description: item.description || "",
+        picture_url: item.image || "",
+        category_id: "fashion",
         quantity: item.quantity,
         unit_price: Number(item.price),
-        currency_id: 'BRL'
+        currency_id: "BRL",
       })),
-      
+
       payer: {
         name: payer.name,
         email: payer.email,
         phone: {
-          area_code: payer.phone?.areaCode || '',
-          number: payer.phone?.number || ''
+          area_code: payer.phone?.areaCode || "",
+          number: payer.phone?.number || "",
         },
         address: {
-          zip_code: payer.address?.zipCode || '',
-          street_name: payer.address?.street || '',
-          street_number: payer.address?.number || ''
-        }
+          zip_code: payer.address?.zipCode || "",
+          street_name: payer.address?.street || "",
+          street_number: payer.address?.number || "",
+        },
       },
 
       back_urls: {
-        success: backUrls?.success || process.env.MERCADOPAGO_SUCCESS_URL,
-        failure: backUrls?.failure || process.env.MERCADOPAGO_FAILURE_URL,
-        pending: backUrls?.pending || process.env.MERCADOPAGO_PENDING_URL
+        success:
+          backUrls?.success ||
+          process.env.MERCADOPAGO_SUCCESS_URL ||
+          "http://localhost:4000/payment-success.html",
+        failure:
+          backUrls?.failure ||
+          process.env.MERCADOPAGO_FAILURE_URL ||
+          "http://localhost:4000/payment-failure.html",
+        pending:
+          backUrls?.pending ||
+          process.env.MERCADOPAGO_PENDING_URL ||
+          "http://localhost:4000/payment-pending.html",
       },
 
-      auto_return: 'approved',
-      
-      external_reference: externalReference || `ORDER-${Date.now()}`,
-      
-      notification_url: notificationUrl || `${process.env.BACKEND_URL}/api/payment/webhook`,
+      // Removido auto_return para funcionar com localhost
+      // Em produção com HTTPS, adicionar: auto_return: "approved"
 
-      statement_descriptor: 'HATHOR IMPORTS',
-      
+      external_reference: externalReference || `ORDER-${Date.now()}`,
+
+      notification_url:
+        notificationUrl || `${process.env.BACKEND_URL}/api/payment/webhook`,
+
+      statement_descriptor: "HATHOR IMPORTS",
+
       payment_methods: {
         excluded_payment_methods: [],
         excluded_payment_types: [],
         installments: 12,
-        default_installments: 1
+        default_installments: 1,
       },
 
       shipments: {
         cost: 0,
-        mode: 'not_specified'
+        mode: "not_specified",
       },
 
       expires: true,
       expiration_date_from: new Date().toISOString(),
-      expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 horas
+      expiration_date_to: new Date(
+        Date.now() + 24 * 60 * 60 * 1000
+      ).toISOString(), // 24 horas
     };
 
     const response = await preference.create({ body: preferenceData });
-    
-    console.log('✅ Preferência de pagamento criada:', response.id);
-    
+
+    console.log("✅ Preferência de pagamento criada:", response.id);
+
     return {
       success: true,
       preferenceId: response.id,
       initPoint: response.init_point,
-      sandboxInitPoint: response.sandbox_init_point
+      sandboxInitPoint: response.sandbox_init_point,
     };
-
   } catch (error) {
-    console.error('❌ Erro ao criar preferência:', error);
+    console.error("❌ Erro ao criar preferência:", error);
     throw new Error(`Erro ao criar preferência de pagamento: ${error.message}`);
   }
 }
@@ -120,7 +131,7 @@ export async function createPaymentPreference(orderData) {
 export async function getPaymentInfo(paymentId) {
   try {
     const paymentInfo = await payment.get({ id: paymentId });
-    
+
     return {
       success: true,
       payment: {
@@ -135,14 +146,15 @@ export async function getPaymentInfo(paymentId) {
         externalReference: paymentInfo.external_reference,
         payer: {
           email: paymentInfo.payer?.email,
-          identification: paymentInfo.payer?.identification
-        }
-      }
+          identification: paymentInfo.payer?.identification,
+        },
+      },
     };
-
   } catch (error) {
-    console.error('❌ Erro ao buscar pagamento:', error);
-    throw new Error(`Erro ao buscar informações do pagamento: ${error.message}`);
+    console.error("❌ Erro ao buscar pagamento:", error);
+    throw new Error(
+      `Erro ao buscar informações do pagamento: ${error.message}`
+    );
   }
 }
 
@@ -166,36 +178,45 @@ export async function processWebhookNotification(notification) {
   try {
     const { type, data, action } = notification;
 
-    console.log(`📬 Notificação recebida - Tipo: ${type}, Ação: ${action || 'N/A'}`);
+    console.log(
+      `📬 Notificação recebida - Tipo: ${type}, Ação: ${action || "N/A"}`
+    );
 
     // Processar apenas notificações de pagamento
-    if (type === 'payment') {
+    if (type === "payment") {
       const paymentId = data.id;
-      
+
       try {
         const paymentInfo = await getPaymentInfo(paymentId);
 
-        console.log(`💳 Status do pagamento ${paymentId}: ${paymentInfo.payment.status}`);
+        console.log(
+          `💳 Status do pagamento ${paymentId}: ${paymentInfo.payment.status}`
+        );
 
         return {
           success: true,
           paymentId,
           status: paymentInfo.payment.status,
-          paymentInfo: paymentInfo.payment
+          paymentInfo: paymentInfo.payment,
         };
       } catch (paymentError) {
         // Se o pagamento não for encontrado (comum em testes), apenas loga e continua
-        if (paymentError.message.includes('not found') || paymentError.message.includes('404')) {
-          console.warn(`⚠️  Pagamento ${paymentId} não encontrado (pode ser um teste ou pagamento antigo)`);
-          
+        if (
+          paymentError.message.includes("not found") ||
+          paymentError.message.includes("404")
+        ) {
+          console.warn(
+            `⚠️  Pagamento ${paymentId} não encontrado (pode ser um teste ou pagamento antigo)`
+          );
+
           return {
             success: true,
             paymentId,
-            status: 'not_found',
-            message: 'Pagamento não encontrado - provavelmente um teste'
+            status: "not_found",
+            message: "Pagamento não encontrado - provavelmente um teste",
           };
         }
-        
+
         // Se for outro erro, propaga
         throw paymentError;
       }
@@ -203,17 +224,16 @@ export async function processWebhookNotification(notification) {
 
     return {
       success: true,
-      message: `Notificação processada (tipo: ${type})`
+      message: `Notificação processada (tipo: ${type})`,
     };
-
   } catch (error) {
-    console.error('❌ Erro ao processar notificação:', error);
-    
+    console.error("❌ Erro ao processar notificação:", error);
+
     // Não propaga o erro para evitar reenvios do Mercado Pago
     return {
       success: false,
       error: error.message,
-      message: 'Erro processado internamente'
+      message: "Erro processado internamente",
     };
   }
 }

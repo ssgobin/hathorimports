@@ -8,6 +8,7 @@
     "dev": "NODE_ENV=development node server.js",
     "prod": "NODE_ENV=production node server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "test:mp": "node test-mercadopago.js",
     "logs": "tail -f logs/combined.log",
     "logs:error": "tail -f logs/error.log",
     "clean:logs": "rm -rf logs/*.log",
