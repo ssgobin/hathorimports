@@ -1,0 +1,27 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Pasta de produtos - imagens públicas
+    match /products/{imageId} {
+      // Qualquer um pode ler (público)
+      allow read: if true;
+      
+      // Apenas usuários autenticados podem fazer upload
+      allow write: if request.auth != null;
+      
+      // Validações de upload
+      allow create: if request.auth != null
+                    && request.resource.size < 5 * 1024 * 1024  // Max 5MB
+                    && request.resource.contentType.matches('image/.*');  // Apenas imagens
+      
+      // Apenas admins podem deletar
+      allow delete: if request.auth != null
+                    && request.auth.token.admin == true;
+    }
+    
+    // Bloquear acesso a outras pastas
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

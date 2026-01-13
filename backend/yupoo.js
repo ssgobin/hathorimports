@@ -41,7 +41,8 @@ function isValidImage(src) {
   if (!src.startsWith("http")) src = "https:" + src;
 
   const s = src.toLowerCase();
-  if (s.includes("logo") || s.includes("watermark") || s.includes("icon")) return false;
+  if (s.includes("logo") || s.includes("watermark") || s.includes("icon"))
+    return false;
   return /\.(jpg|jpeg|png|webp)/.test(s);
 }
 
@@ -54,14 +55,15 @@ async function fetchYupooHtml(url) {
       timeout: 20000,
       headers: {
         "User-Agent": "Mozilla/5.0",
-        "Accept": "text/html",
-        "Referer": "https://www.google.com/"
-      }
+        Accept: "text/html",
+        Referer: "https://www.google.com/",
+      },
     });
     return res.data;
   } catch (err) {
     console.log("[YUPOO] Axios bloqueado, usando proxy...", err.message);
-    const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+    const proxyUrl =
+      "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
     const prox = await axios.get(proxyUrl, { timeout: 20000 });
     return prox.data;
   }
@@ -84,19 +86,18 @@ async function callHuggingFace(prompt) {
         model: "deepseek-ai/DeepSeek-V3.2:novita",
         messages: [{ role: "user", content: prompt }],
         max_tokens: 200,
-        temperature: 0.3
+        temperature: 0.3,
       },
       {
         headers: {
           Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        timeout: 20000
+        timeout: 20000,
       }
     );
 
     return response.data.choices[0].message.content;
-
   } catch (err) {
     console.error("[HF] Erro:", err.response?.data || err.message);
     return null;
@@ -199,7 +200,6 @@ RETORNE APENAS O JSON:
     console.log("🟩 [HF] JSON interpretado:", parsed);
 
     return parsed;
-
   } catch (err) {
     console.error("❌ [HF] ERRO GRAVE:", err.message);
     return null;
@@ -216,8 +216,10 @@ function normalizeCategory(aiCat, title) {
 
   if (aiCat) {
     const c = aiCat.toLowerCase();
-    if (c.includes("roup")) return { category: "roupas", categoryLabel: "Roupas" };
-    if (c.includes("acess")) return { category: "acessorios", categoryLabel: "Acessórios" };
+    if (c.includes("roup"))
+      return { category: "roupas", categoryLabel: "Roupas" };
+    if (c.includes("acess"))
+      return { category: "acessorios", categoryLabel: "Acessórios" };
     if (c.includes("bag") || c.includes("bolsa"))
       return { category: "bolsas", categoryLabel: "Bolsas" };
     if (c.includes("glasses") || c.includes("oculos"))
@@ -242,27 +244,20 @@ function detectBrandByTitle(title) {
   if (t.includes("nike") || t.includes("air max") || t.includes("air force"))
     return "Nike";
 
-  if (t.includes("jordan") || t.includes("aj"))
-    return "Jordan";
+  if (t.includes("jordan") || t.includes("aj")) return "Jordan";
 
-  if (t.includes("adidas") || t.includes("yeezy"))
-    return "Adidas";
+  if (t.includes("adidas") || t.includes("yeezy")) return "Adidas";
 
-  if (t.includes("new balance") || t.includes("nb"))
-    return "New Balance";
+  if (t.includes("new balance") || t.includes("nb")) return "New Balance";
 
-  if (t.includes("puma"))
-    return "Puma";
+  if (t.includes("puma")) return "Puma";
 
-  if (t.includes("asics"))
-    return "Asics";
+  if (t.includes("asics")) return "Asics";
 
-  if (t.includes("oakley"))
-    return "Oakley";
+  if (t.includes("oakley")) return "Oakley";
 
   return "Genérico";
 }
-
 
 /* -------------------------------------------------
    FUNÇÃO PRINCIPAL
@@ -298,15 +293,16 @@ export async function importFromYupoo(url) {
   const finalTitle = ai?.title?.trim() || cleanedFallback;
 
   // categoria
-  const { category, categoryLabel } = normalizeCategory(ai?.category, finalTitle);
+  const { category, categoryLabel } = normalizeCategory(
+    ai?.category,
+    finalTitle
+  );
 
   // imagens
   const images = [];
   $("img").each((i, e) => {
     let src =
-      $(e).attr("data-src") ||
-      $(e).attr("data-original") ||
-      $(e).attr("src");
+      $(e).attr("data-src") || $(e).attr("data-original") || $(e).attr("src");
 
     if (!src) return;
     if (!src.startsWith("http")) src = "https:" + src;
@@ -316,12 +312,10 @@ export async function importFromYupoo(url) {
 
   // preço final em BRL
   const finalPriceBRL = rawPriceYuan
-    ? Math.round(((rawPriceYuan * COT) * MARGEM + FRETE + DECL) * 100) / 100
+    ? Math.round((rawPriceYuan * COT * MARGEM + FRETE + DECL) * 100) / 100
     : null;
 
-  const brand =
-    ai?.brand ||
-    detectBrandByTitle(finalTitle);
+  const brand = ai?.brand || detectBrandByTitle(finalTitle);
 
   return {
     rawTitle,
@@ -332,7 +326,6 @@ export async function importFromYupoo(url) {
     categoryLabel,
     images: images.slice(0, 12),
     rawPriceYuan,
-    finalPriceBRL
+    finalPriceBRL,
   };
-
 }
