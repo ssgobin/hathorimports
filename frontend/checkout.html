@@ -1,428 +1,314 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Checkout · Hathor Imports</title>
+  <head>
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout - Hathor Imports</title>
+    <link rel="stylesheet" href="assets/style.css" />
+    <link rel="stylesheet" href="assets/checkout-styles.css" />
+  </head>
+  <body>
+    <!-- Header será carregado dinamicamente -->
+    <div id="header-container"></div>
 
-    <link rel="stylesheet" href="./assets/style.css" />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <main class="checkout-page">
+      <!-- Cabeçalho -->
+      <div class="checkout-header">
+        <h1 class="checkout-title">Finalizar Pedido</h1>
+        <p class="checkout-subtitle">
+          Preencha seus dados para concluir a compra
+        </p>
+      </div>
 
-    <style>
-        .checkout-container {
-            max-width: 750px;
-            margin: 40px auto;
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-        }
+      <!-- Layout Principal -->
+      <div class="checkout-layout">
+        <!-- Formulário -->
+        <div class="checkout-form">
+          <form id="checkout-form">
+            <!-- Dados Pessoais -->
+            <div class="form-section">
+              <h2 class="section-title">
+                <span class="section-icon">👤</span>
+                Dados Pessoais
+              </h2>
 
-        .checkout-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            text-align: center;
-            color: #111;
-        }
+              <div class="form-group">
+                <label for="input-name" class="form-label required"
+                  >Nome Completo</label
+                >
+                <input
+                  type="text"
+                  id="input-name"
+                  class="form-input"
+                  placeholder="Seu nome completo"
+                  required
+                />
+              </div>
 
-        .checkout-group {
-            margin-bottom: 20px;
-        }
-
-        .checkout-group label {
-            display: block;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: #444;
-        }
-
-        .checkout-group input,
-        .checkout-group textarea,
-        .checkout-group select {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            background: #fafafa;
-            font-size: 1rem;
-            outline: none;
-        }
-
-        .checkout-row {
-            display: flex;
-            gap: 12px;
-        }
-
-        .checkout-row .checkout-group {
-            flex: 1;
-        }
-
-        .checkout-summary {
-            margin-top: 25px;
-            padding: 20px;
-            background: #fafafa;
-            border-radius: 10px;
-            border: 1px solid #eee;
-        }
-
-        .checkout-summary-total {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #111;
-            margin-top: 10px;
-            text-align: right;
-        }
-
-        .btn-primary.full {
-            margin-top: 25px;
-            width: 100%;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 1.2rem;
-        }
-
-        header.topbar {
-            padding: 20px;
-            background: #111;
-            color: #fff;
-            text-align: center;
-            font-size: 1.3rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-
-        .frete-box {
-            background: #eef2ff;
-            padding: 14px;
-            border-radius: 8px;
-            border: 1px solid #ccd5ff;
-            margin-top: 10px;
-        }
-    </style>
-
-</head>
-
-<body>
-
-    <script src="/js/loadHeader.js" defer></script>
-    <script type="module" src="./js/home-page.js"></script>
-
-    <main class="page">
-        <div class="checkout-container">
-
-            <h1 class="checkout-title">Finalizar Pedido</h1>
-
-            <form id="checkoutForm">
-
-                <div class="checkout-group">
-                    <label>Nome completo</label>
-                    <input type="text" id="nameInput" required>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="input-whatsapp" class="form-label required"
+                    >WhatsApp</label
+                  >
+                  <input
+                    type="tel"
+                    id="input-whatsapp"
+                    class="form-input"
+                    placeholder="(00) 00000-0000"
+                    required
+                  />
                 </div>
 
-                <div class="checkout-group">
-                    <label>Whatsapp</label>
-                    <input type="text" id="whatsappInput" required placeholder="11999999999">
+                <div class="form-group">
+                  <label for="input-email" class="form-label">E-mail</label>
+                  <input
+                    type="email"
+                    id="input-email"
+                    class="form-input"
+                    placeholder="seu@email.com"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Endereço de Entrega -->
+            <div class="form-section">
+              <h2 class="section-title">
+                <span class="section-icon">📍</span>
+                Endereço de Entrega
+              </h2>
+
+              <div class="form-group">
+                <label for="input-cep" class="form-label required">CEP</label>
+                <div class="cep-group">
+                  <input
+                    type="text"
+                    id="input-cep"
+                    class="form-input"
+                    placeholder="00000-000"
+                    maxlength="9"
+                    required
+                  />
+                  <button
+                    type="button"
+                    id="btn-search-cep"
+                    class="btn-search-cep"
+                  >
+                    🔍 Buscar
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="input-street" class="form-label required"
+                  >Rua</label
+                >
+                <input
+                  type="text"
+                  id="input-street"
+                  class="form-input"
+                  placeholder="Nome da rua"
+                  required
+                />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="input-number" class="form-label required"
+                    >Número</label
+                  >
+                  <input
+                    type="text"
+                    id="input-number"
+                    class="form-input"
+                    placeholder="123"
+                    required
+                  />
                 </div>
 
-                <!-- CEP e FRETE -->
-                <div class="checkout-row">
-                    <div class="checkout-group">
-                        <label>CEP</label>
-                        <input type="text" id="cepInput" required>
-                    </div>
+                <div class="form-group">
+                  <label for="input-complement" class="form-label"
+                    >Complemento</label
+                  >
+                  <input
+                    type="text"
+                    id="input-complement"
+                    class="form-input"
+                    placeholder="Apto, bloco, etc"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="input-district" class="form-label required"
+                  >Bairro</label
+                >
+                <input
+                  type="text"
+                  id="input-district"
+                  class="form-input"
+                  placeholder="Nome do bairro"
+                  required
+                />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="input-city" class="form-label required"
+                    >Cidade</label
+                  >
+                  <input
+                    type="text"
+                    id="input-city"
+                    class="form-input"
+                    placeholder="Nome da cidade"
+                    required
+                  />
                 </div>
 
-                <div class="checkout-group">
-                    <label>Rua</label>
-                    <input type="text" id="streetInput" required>
+                <div class="form-group">
+                  <label for="input-state" class="form-label required"
+                    >Estado</label
+                  >
+                  <input
+                    type="text"
+                    id="input-state"
+                    class="form-input"
+                    placeholder="UF"
+                    maxlength="2"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Método de Pagamento -->
+            <div class="form-section">
+              <h2 class="section-title">
+                <span class="section-icon">💳</span>
+                Método de Pagamento
+              </h2>
+
+              <div class="payment-methods">
+                <div class="payment-option" data-method="PIX">
+                  <div class="payment-icon">💰</div>
+                  <div class="payment-name">PIX</div>
                 </div>
 
-                <div class="checkout-row">
-                    <div class="checkout-group">
-                        <label>Número</label>
-                        <input type="text" id="numberInput" required>
-                    </div>
-
-                    <div class="checkout-group">
-                        <label>Bairro</label>
-                        <input type="text" id="districtInput" required>
-                    </div>
+                <div class="payment-option" data-method="Cartão de Crédito">
+                  <div class="payment-icon">💳</div>
+                  <div class="payment-name">Crédito</div>
                 </div>
 
-                <div class="checkout-row">
-                    <div class="checkout-group">
-                        <label>Cidade</label>
-                        <input type="text" id="cityInput" required>
-                    </div>
-
-                    <div class="checkout-group">
-                        <label>Estado</label>
-                        <input type="text" id="stateInput" required>
-                    </div>
+                <div class="payment-option" data-method="Cartão de Débito">
+                  <div class="payment-icon">💵</div>
+                  <div class="payment-name">Débito</div>
                 </div>
+              </div>
 
-                <div class="frete-box" id="freteBox" style="display:none;">
-                    <strong>Frete calculado:</strong> R$ <span id="freteValor">0,00</span>
+              <div class="info-box">
+                <span class="info-icon">ℹ️</span>
+                <div class="info-content">
+                  <div class="info-title">Sobre o Pagamento</div>
+                  <div class="info-text">
+                    Após enviar o pedido, entraremos em contato via WhatsApp
+                    para confirmar o pagamento e finalizar a compra.
+                  </div>
                 </div>
-
-                <!-- MÉTODO DE PAGAMENTO -->
-                <div class="checkout-group">
-                    <label>Método de pagamento</label>
-                    <select id="paymentMethod" required>
-                        <option value="">Selecione...</option>
-                        <option value="PIX">PIX</option>
-                        <option value="Cartão de Crédito">Cartão de Crédito</option>
-                        <option value="Cartão de Débito">Cartão de Débito</option>
-                    </select>
-                </div>
-
-                <div class="checkout-group">
-                    <label>Possui um cupom?</label>
-                    <div style="display:flex; gap:10px;">
-                        <input type="text" id="couponInput" placeholder="Digite o cupom" />
-                        <button type="button" id="applyCouponBtn" class="btn-primary"
-                            style="min-width:120px;">Aplicar</button>
-                    </div>
-                    <small id="couponStatus" style="color:#555;"></small>
-                </div>
-
-
-                <!-- RESUMO -->
-                <div class="checkout-summary">
-                    <h3>Resumo do Pedido</h3>
-                    <div id="summaryItems"></div>
-                    <p class="checkout-summary-total">Total: R$ <span id="summaryTotal">0,00</span></p>
-                </div>
-
-                <button type="submit" class="btn-primary full">Concluir Pedido</button>
-            </form>
-
+              </div>
+            </div>
+          </form>
         </div>
+
+        <!-- Resumo do Pedido -->
+        <aside class="order-summary">
+          <h2 class="summary-title">Resumo do Pedido</h2>
+
+          <!-- Itens -->
+          <div id="summary-items" class="summary-items">
+            <!-- Itens serão inseridos aqui via JavaScript -->
+          </div>
+
+          <div class="summary-divider"></div>
+
+          <!-- Valores -->
+          <div class="summary-values">
+            <div class="summary-row">
+              <span class="summary-label">Subtotal</span>
+              <span class="summary-value" id="summary-subtotal">R$ 0,00</span>
+            </div>
+
+            <div class="summary-row" id="discount-row" style="display: none">
+              <span class="summary-label">Desconto</span>
+              <span class="summary-value discount" id="summary-discount"
+                >- R$ 0,00</span
+              >
+            </div>
+
+            <div class="summary-row">
+              <span class="summary-label">Frete</span>
+              <span class="summary-value" id="summary-shipping">R$ 0,00</span>
+            </div>
+
+            <div class="summary-row summary-total">
+              <span class="summary-label">Total</span>
+              <span class="summary-value" id="summary-total">R$ 0,00</span>
+            </div>
+          </div>
+
+          <!-- Botões de Ação -->
+          <div class="checkout-actions">
+            <button
+              type="button"
+              id="btn-mercadopago"
+              class="btn-whatsapp-checkout"
+              style="background: linear-gradient(135deg, #009ee3, #0073bb)"
+            >
+              <span>💳</span>
+              <span>Pagar com Mercado Pago</span>
+            </button>
+
+            <button
+              type="button"
+              id="btn-whatsapp"
+              class="btn-whatsapp-checkout"
+            >
+              <span>💬</span>
+              <span>Finalizar via WhatsApp</span>
+            </button>
+
+            <a href="cart.html" class="btn-save-order">
+              ← Voltar ao Carrinho
+            </a>
+          </div>
+
+          <div class="info-box success" style="margin-top: 20px">
+            <span class="info-icon">✅</span>
+            <div class="info-content">
+              <div class="info-title">Compra Segura</div>
+              <div class="info-text">
+                Seus dados estão protegidos. Finalize pelo WhatsApp com total
+                segurança.
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
     </main>
 
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Scripts -->
     <script type="module">
-        import { createOrder } from "./js/store.js";
+      import { loadHeader } from "./js/loadHeader.js";
+      import { initCheckout } from "./js/checkout-improved.js";
 
-        const summaryItemsEl = document.getElementById("summaryItems");
-        const summaryTotalEl = document.getElementById("summaryTotal");
-        import { getCoupon, useCoupon } from "./js/store.js";
+      // Carregar header
+      loadHeader();
 
-        let appliedCoupon = null;
-
-
-        let cart = JSON.parse(localStorage.getItem("cart") || "[]");
-        let frete = 0;
-
-        function loadSummary() {
-            let subtotal = 0;
-
-            summaryItemsEl.innerHTML = cart.map(
-                (p) => `
-      <div class="checkout-summary-item">
-        <span>${p.title}</span>
-        <strong>R$ ${p.price.toFixed(2)}</strong>
-      </div>
-    `
-            ).join("");
-
-            cart.forEach((p) => subtotal += p.price);
-
-            let final = calculateTotalWithCoupon(subtotal) + frete;
-
-            summaryTotalEl.textContent = final.toFixed(2);
-        }
-
-
-        loadSummary();
-        function calculateTotalWithCoupon(subtotal) {
-            if (!appliedCoupon) return subtotal;
-
-            if (appliedCoupon.type === "percent") {
-                return subtotal - (subtotal * (appliedCoupon.value / 100));
-            }
-
-            if (appliedCoupon.type === "fixed") {
-                return subtotal - appliedCoupon.value;
-            }
-
-            return subtotal;
-        }
-
-        function calculateFinalTotal(subtotal, frete) {
-            let total = subtotal;
-
-            if (appliedCoupon) {
-                if (appliedCoupon.type === "percent") {
-                    total -= subtotal * (appliedCoupon.value / 100);
-                }
-
-                if (appliedCoupon.type === "fixed") {
-                    total -= appliedCoupon.value;
-                }
-            }
-
-            if (total < 0) total = 0;
-
-            return total + frete;
-        }
-
-
-
-        // VIA CEP (preenche endereço automaticamente)
-        document.getElementById("cepInput").addEventListener("blur", async () => {
-            const cep = document.getElementById("cepInput").value.replace(/\D/g, "");
-
-            if (cep.length !== 8) return;
-
-            const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-            const data = await res.json();
-
-            if (!data.erro) {
-                document.getElementById("streetInput").value = data.logradouro || "";
-                document.getElementById("districtInput").value = data.bairro || "";
-                document.getElementById("cityInput").value = data.localidade || "";
-                document.getElementById("stateInput").value = data.uf || "";
-            }
-        });
-
-        document.getElementById("applyCouponBtn").addEventListener("click", async () => {
-            const code = document.getElementById("couponInput").value.trim().toUpperCase();
-            const statusEl = document.getElementById("couponStatus");
-
-            if (!code) {
-                statusEl.textContent = "Digite um cupom.";
-                statusEl.style.color = "red";
-                return;
-            }
-
-            try {
-                const coupon = await getCoupon(code);
-
-                if (!coupon) {
-                    statusEl.textContent = "Cupom não encontrado.";
-                    statusEl.style.color = "red";
-                    return;
-                }
-
-                if (!coupon.active) {
-                    statusEl.textContent = "Cupom inativo.";
-                    statusEl.style.color = "red";
-                    return;
-                }
-
-                // validade
-                if (coupon.expiresAt && coupon.expiresAt.toDate() < new Date()) {
-                    statusEl.textContent = "Cupom expirado.";
-                    statusEl.style.color = "red";
-                    return;
-                }
-
-
-                // limite de uso
-                // limite de uso – se não existir "uses", considera 0
-                const currentUses = coupon.uses ?? 0;
-
-                if (currentUses >= coupon.maxUses) {
-                    statusEl.textContent = "Este cupom já atingiu o limite de uso.";
-                    statusEl.style.color = "red";
-                    return;
-                }
-
-
-                // TUDO OK — APLICAR CUPOM
-                appliedCoupon = coupon;
-                statusEl.textContent = `Cupom aplicado: ${coupon.code}`;
-                statusEl.style.color = "green";
-
-                loadSummary();
-
-            } catch (error) {
-                console.log(error);
-                statusEl.textContent = "Erro ao validar cupom.";
-                statusEl.style.color = "red";
-            }
-        });
-
-
-
-
-        // FINALIZA PEDIDO
-        document.getElementById("checkoutForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            const name = document.getElementById("nameInput").value.trim();
-            const whatsapp = document.getElementById("whatsappInput").value.trim();
-            const cep = document.getElementById("cepInput").value.trim();
-
-            const address = {
-                street: document.getElementById("streetInput").value.trim(),
-                number: document.getElementById("numberInput").value.trim(),
-                district: document.getElementById("districtInput").value.trim(),
-                city: document.getElementById("cityInput").value.trim(),
-                state: document.getElementById("stateInput").value.trim(),
-            };
-
-            const paymentMethod = document.getElementById("paymentMethod")?.value || "a definir";
-
-            if (!paymentMethod) {
-                Swal.fire("Atenção", "Selecione um método de pagamento.", "warning");
-                return;
-            }
-
-            const items = cart.map(p => ({
-                title: p.title,
-                price: Number(p.price),
-                qty: p.qty ?? 1
-            }));
-
-            const subtotal = items.reduce((acc, p) => acc + p.price * p.qty, 0);
-            const total = calculateFinalTotal(subtotal, frete);
-
-
-            const pedido = {
-                customerName: name,
-                customerWhatsapp: whatsapp,
-                cep,
-                address,
-                items,
-                subtotal,
-                frete,
-                total, // ✅ agora COM desconto
-                paymentMethod,
-                coupon: appliedCoupon ? appliedCoupon.code : null,
-                discount: appliedCoupon ? appliedCoupon.value : 0,
-                discountType: appliedCoupon ? appliedCoupon.type : null,
-                status: "pendente",
-                createdAt: new Date().toISOString()
-            };
-
-
-
-            await createOrder(pedido);
-            if (appliedCoupon) {
-                await useCoupon(appliedCoupon.code);
-            }
-
-
-            localStorage.removeItem("cart");
-
-            var teste = document.getElementById("summaryTotal")
-            console.log(teste);
-
-            Swal.fire({
-                icon: "success",
-                title: "Pedido concluído!",
-                text: "Seu pedido foi registrado com sucesso!",
-                confirmButtonText: "Voltar ao início"
-            }).then(() => {
-                window.location.href = "./index.html";
-            });
-        });
+      // Inicializar checkout
+      // initCheckout(); // Já é chamado automaticamente no módulo
     </script>
-
-</body>
-
+  </body>
 </html>

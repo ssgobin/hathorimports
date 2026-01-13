@@ -9,27 +9,25 @@ import {
   createCoupon,
   listCoupons,
   createOrder,
-  listOrders
+  listOrders,
 } from "./store.js";
 
-import {
-  requireAuth,
-  handleAuthButtons,
-  logout
-} from "./auth.js";
+import { requireAuth, handleAuthButtons, logout } from "./auth.js";
+
+import { notify } from "./notifications.js";
 
 // 🔥 FIREBASE
 import {
   getFirestore,
   doc,
-  setDoc
+  setDoc,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 import {
   getDocs,
   collection,
   query,
-  where
+  where,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
@@ -120,12 +118,16 @@ async function loadProducts(updateDashboard = false) {
         <div class="admin-prod-info">
           <h3>${p.title}</h3>
 
-          ${hasPromo ? `
+          ${
+            hasPromo
+              ? `
             <p class="old-price">De: R$ ${original.toFixed(2)}</p>
             <p class="new-price">Por: R$ ${final.toFixed(2)}</p>
-          ` : `
+          `
+              : `
             <p class="normal-price">R$ ${final.toFixed(2)}</p>
-          `}
+          `
+          }
         </div>
 
         <div class="admin-actions">
@@ -147,7 +149,6 @@ async function loadProducts(updateDashboard = false) {
         })
         .join("");
 
-
       listEl.querySelectorAll(".admin-delete-btn").forEach((btn) => {
         btn.addEventListener("click", async () => {
           const id = btn.dataset.id;
@@ -166,14 +167,13 @@ async function loadProducts(updateDashboard = false) {
           const ref = doc(db, "products", id);
 
           await updateDoc(ref, {
-            destaque: !prod.destaque // alterna true/false
+            destaque: !prod.destaque, // alterna true/false
           });
 
           dashLog("Alterado destaque do produto: " + prod.title);
           loadProducts(true);
         });
       });
-
     }
   }
 
@@ -230,16 +230,15 @@ if (saveSettingsBtn) {
       cotacao: parseFloat(cfgCotacao.value || "0") || 0.75,
       fretePadrao: parseFloat(cfgFrete.value || "0") || 80,
       declaracaoPadrao: parseFloat(cfgDeclaracao.value || "0") || 30,
-      margemPercent: parseFloat(cfgMargemPercent.value || "0") || 30
+      margemPercent: parseFloat(cfgMargemPercent.value || "0") || 30,
     };
 
     await saveSettings(data);
     appSettings = data;
     dashLog("Configurações salvas.");
-    alert("Configurações salvas!");
+    notify.success("Configurações salvas com sucesso!");
   });
 }
-
 
 /* =====================================================
    IMPORTAÇÃO YUPOO
@@ -265,7 +264,6 @@ function arredondaPreco(preco) {
   return multiplo5 + 0.99;
 }
 
-
 async function calcularPreco(rawYuan, finalBRL, defaultPrice) {
   const s = await getSettings(); // 🔥 Firestore
   if (!s) return Number(defaultPrice || 0);
@@ -284,7 +282,6 @@ async function calcularPreco(rawYuan, finalBRL, defaultPrice) {
   const arredondado = Math.round(totalComMargem * 100) / 100;
   return arredondaPreco(arredondado);
 }
-
 
 /* =====================================================
    FUNÇÃO DE DETECÇÃO DE CATEGORIA
@@ -340,68 +337,150 @@ async function importar() {
   const url = urlInput.value.trim();
   const defaultPrice = parseFloat(defaultPriceInput.value || "0") || 0;
 
-  if (!url) return alert("Cole o link da Yupoo.");
+  if (!url) {
+    notify.warning("Cole o link da Yupoo para importar");
+    return;
+  }
+
+  // Validação básica de URL
+  if (!url.startsWith("http")) {
+    notify.error("URL inválida. Deve começar com http:// ou https://");
+    return;
+  }
 
   statusBox.textContent = "";
   logStatus("Importando álbum...");
 
-  const res = await fetch("/api/import-yupoo", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url })
-  });
-
-  if (!res.ok) {
-    logStatus("Erro na API: " + res.status);
-    return;
+  // Desabilita botão durante importação
+  if (importBtn) {
+    importBtn.disabled = true;
+    importBtn.textContent = "Importando...";
   }
 
+  try {
+    // Obter token de autenticação
+    const token = localStorage.getItem("authToken");
 
+    if (!token) {
+      logStatus(
+        "❌ Token de autenticação não encontrado. Faça login novamente."
+      );
+      notify.error(
+        "Você precisa fazer login novamente",
+        "Erro de Autenticação"
+      );
+      return;
+    }
 
-  const data = await res.json();
-  console.log("DEBUG IMPORT API:", data);
+    const res = await fetch("/api/import-yupoo", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ url }),
+    });
 
-  logStatus("Título bruto: " + data.rawTitle);
-  logStatus("Título final: " + data.title);
-  logStatus("Fotos: " + data.images.length);
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      const errorMsg = errorData.error || `Erro HTTP ${res.status}`;
 
-  const rawPrice = data.rawPriceYuan || null;
-  const finalPrice = await calcularPreco(rawPrice, data.finalPriceBRL, defaultPrice);
+      logStatus(`❌ Erro na API: ${errorMsg}`);
+      notify.error(`Erro ao importar: ${errorMsg}`, "Erro na Importação");
+      return;
+    }
 
-  const { category, label } = detectarCategoria(data.title, data.category);
+    const result = await res.json();
 
-  pendingImport = {
-    title: data.title,
-    price: finalPrice,
-    rawPriceYuan: rawPrice,
-    images: data.images,
-    category,
-    categoryLabel: label,
-    brand: data.brand || "Genérico",
-    model: data.model || null
-  };
+    // Verifica se a resposta tem a estrutura esperada
+    if (!result.success || !result.data) {
+      logStatus("❌ Resposta inválida da API");
+      notify.error("Resposta inválida do servidor", "Erro na Importação");
+      return;
+    }
 
+    const data = result.data;
+    console.log("Produto importado:", data);
 
-  // preencher modal
-  document.getElementById("previewTitle").value = pendingImport.title;
-  document.getElementById("previewPrice").value = pendingImport.price;
-  document.getElementById("previewCategory").value = pendingImport.category;
-  document.getElementById("previewBrand").value = pendingImport.brand || "";
-  document.getElementById("previewModel").value = pendingImport.model || "";
+    logStatus("Título bruto: " + (data.rawTitle || "N/A"));
+    logStatus("Título final: " + (data.title || "Sem título"));
+    logStatus("Fotos encontradas: " + (data.images?.length || 0));
 
-  // imagens
-  const imgBox = document.getElementById("previewImages");
-  imgBox.innerHTML = pendingImport.images
-    .slice(0, 6)
-    .map(
-      (src) =>
-        `<img src="${src}" style="width:90px;height:90px;object-fit:cover;border-radius:8px">`
-    )
-    .join("");
+    // Validações
+    if (!data.images || data.images.length === 0) {
+      logStatus("⚠️ Nenhuma imagem encontrada");
+      notify.warning("Nenhuma imagem foi encontrada no álbum", "Atenção");
+    }
 
-  // abrir modal
-  document.getElementById("previewModal").classList.remove("hidden");
+    const rawPrice = data.rawPriceYuan || null;
+    const finalPrice = await calcularPreco(
+      rawPrice,
+      data.finalPriceBRL,
+      defaultPrice
+    );
 
+    if (!finalPrice || finalPrice <= 0) {
+      logStatus("Preço não calculado. Usando preço padrão.");
+    }
+
+    const { category, label } = detectarCategoria(data.title, data.category);
+
+    pendingImport = {
+      title: data.title || "Produto Importado",
+      price: finalPrice || defaultPrice,
+      rawPriceYuan: rawPrice,
+      images: data.images || [],
+      category,
+      categoryLabel: label,
+      brand: data.brand || "Genérico",
+      model: data.model || null,
+    };
+
+    // Preencher modal
+    document.getElementById("previewTitle").value = pendingImport.title;
+    document.getElementById("previewPrice").value = pendingImport.price;
+    document.getElementById("previewCategory").value = pendingImport.category;
+    document.getElementById("previewBrand").value = pendingImport.brand || "";
+    document.getElementById("previewModel").value = pendingImport.model || "";
+
+    // Imagens
+    const imgBox = document.getElementById("previewImages");
+    if (pendingImport.images.length > 0) {
+      imgBox.innerHTML = pendingImport.images
+        .slice(0, 6)
+        .map(
+          (src) =>
+            `<img src="${src}"
+                  style="width:90px;height:90px;object-fit:cover;border-radius:8px"
+                  onerror="this.src='https://placehold.co/90x90?text=Erro'"
+                  alt="Preview" />`
+        )
+        .join("");
+    } else {
+      imgBox.innerHTML = "<p style='color:#888'>Nenhuma imagem disponível</p>";
+    }
+
+    // Abrir modal
+    document.getElementById("previewModal").classList.remove("hidden");
+    logStatus("✅ Importação concluída! Revise os dados antes de salvar.");
+    notify.success(
+      "Produto importado! Revise os dados antes de salvar.",
+      "Importação Concluída"
+    );
+  } catch (error) {
+    console.error("❌ Erro ao importar:", error);
+    logStatus(`❌ Erro: ${error.message}`);
+    notify.error(
+      `Erro ao importar produto: ${error.message}`,
+      "Erro na Importação"
+    );
+  } finally {
+    // Reabilita botão
+    if (importBtn) {
+      importBtn.disabled = false;
+      importBtn.textContent = "Importar";
+    }
+  }
 }
 
 if (importBtn) importBtn.addEventListener("click", importar);
@@ -409,7 +488,6 @@ if (importBtn) importBtn.addEventListener("click", importar);
 /* =====================================================
    CLIENTES
 ===================================================== */
-
 
 let cachedCustomers = [];
 const customersList = document.getElementById("customersList");
@@ -423,9 +501,9 @@ async function loadCustomers() {
   const q = query(usersRef, where("role", "==", "customer"));
   const snap = await getDocs(q);
 
-  const customers = snap.docs.map(d => ({
+  const customers = snap.docs.map((d) => ({
     id: d.id,
-    ...d.data()
+    ...d.data(),
   }));
 
   cachedCustomers = customers;
@@ -436,7 +514,9 @@ async function loadCustomers() {
     return;
   }
 
-  customersList.innerHTML = customers.map(c => `
+  customersList.innerHTML = customers
+    .map(
+      (c) => `
     <div class="admin-list-item">
       <strong>${c.name || "Sem nome"}</strong><br/>
       📧 ${c.email || "-"}<br/>
@@ -445,36 +525,37 @@ async function loadCustomers() {
         UID: ${c.uid || c.id}
       </span>
     </div>
-  `).join("");
+  `
+    )
+    .join("");
 
   populateSelectsForOrders();
 }
 
+document
+  .getElementById("createCustomerBtn")
+  ?.addEventListener("click", async () => {
+    const name = customerName.value.trim();
+    if (!name) return alert("Informe o nome.");
 
+    await createCustomer({
+      name,
+      email: customerEmail.value.trim(),
+      whatsapp: customerWhatsapp.value.trim(),
+      notes: customerNotes.value.trim(),
+      role: "customer", // 🔥 garante que aparece na listagem
+      createdAt: new Date().toISOString(),
+    });
 
-document.getElementById("createCustomerBtn")?.addEventListener("click", async () => {
-  const name = customerName.value.trim();
-  if (!name) return alert("Informe o nome.");
+    dashLog("Cliente cadastrado: " + name);
 
-  await createCustomer({
-    name,
-    email: customerEmail.value.trim(),
-    whatsapp: customerWhatsapp.value.trim(),
-    notes: customerNotes.value.trim(),
-    role: "customer",   // 🔥 garante que aparece na listagem
-    createdAt: new Date().toISOString()
+    customerName.value = "";
+    customerEmail.value = "";
+    customerWhatsapp.value = "";
+    customerNotes.value = "";
+
+    loadCustomers();
   });
-
-  dashLog("Cliente cadastrado: " + name);
-
-  customerName.value = "";
-  customerEmail.value = "";
-  customerWhatsapp.value = "";
-  customerNotes.value = "";
-
-  loadCustomers();
-});
-
 
 /* =====================================================
    CUPONS
@@ -498,19 +579,18 @@ async function loadCoupons() {
         ? c.createdAt.toDate().toLocaleString("pt-BR")
         : "";
 
-      const expires =
-        c.expiresAt?.toDate?.()
-          ? c.expiresAt.toDate().toLocaleDateString("pt-BR")
-          : "sem validade";
+      const expires = c.expiresAt?.toDate?.()
+        ? c.expiresAt.toDate().toLocaleDateString("pt-BR")
+        : "sem validade";
 
       const typeLabel =
-        c.type === "percent"
-          ? c.value + "% OFF"
-          : "R$ " + c.value.toFixed(2);
+        c.type === "percent" ? c.value + "% OFF" : "R$ " + c.value.toFixed(2);
 
       return `
         <div class="admin-list-item">
-          <strong>${c.code}</strong> — ${typeLabel} — ${c.active ? "Ativo" : "Inativo"}<br/>
+          <strong>${c.code}</strong> — ${typeLabel} — ${
+        c.active ? "Ativo" : "Inativo"
+      }<br/>
           <span>Validade: ${expires}</span><br/>
           <span style='font-size:0.75rem;color:#888'>Criado em ${created}</span>
         </div>
@@ -521,32 +601,34 @@ async function loadCoupons() {
   await populateSelectsForOrders();
 }
 
-document.getElementById("createCouponBtn")?.addEventListener("click", async () => {
-  const code = couponCode.value.trim().toUpperCase();
-  if (!code) return alert("Informe o código.");
+document
+  .getElementById("createCouponBtn")
+  ?.addEventListener("click", async () => {
+    const code = couponCode.value.trim().toUpperCase();
+    if (!code) return alert("Informe o código.");
 
-  const value = parseFloat(couponValue.value || "0") || 0;
-  if (!value) return alert("Informe o valor.");
+    const value = parseFloat(couponValue.value || "0") || 0;
+    if (!value) return alert("Informe o valor.");
 
-  await createCoupon({
-    code,
-    type: couponType.value,
-    value,
-    maxUses: parseInt(couponMaxUses.value || "0") || 0,
-    expiresAt: couponExpires.value || null,
-    active: couponActive.checked
+    await createCoupon({
+      code,
+      type: couponType.value,
+      value,
+      maxUses: parseInt(couponMaxUses.value || "0") || 0,
+      expiresAt: couponExpires.value || null,
+      active: couponActive.checked,
+    });
+
+    dashLog("Cupom criado: " + code);
+
+    couponCode.value = "";
+    couponValue.value = "";
+    couponMaxUses.value = "";
+    couponExpires.value = "";
+    couponActive.checked = true;
+
+    loadCoupons();
   });
-
-  dashLog("Cupom criado: " + code);
-
-  couponCode.value = "";
-  couponValue.value = "";
-  couponMaxUses.value = "";
-  couponExpires.value = "";
-  couponActive.checked = true;
-
-  loadCoupons();
-});
 
 /* =====================================================
    PEDIDOS
@@ -558,26 +640,28 @@ async function populateSelectsForOrders() {
   if (orderCustomer) {
     orderCustomer.innerHTML = cachedCustomers.length
       ? cachedCustomers
-        .map((c) => `<option value="${c.id}">${c.name}</option>`)
-        .join("")
+          .map((c) => `<option value="${c.id}">${c.name}</option>`)
+          .join("")
       : "<option value=''>Cadastre um cliente primeiro</option>";
   }
 
   if (orderProduct) {
     orderProduct.innerHTML = cachedProducts.length
       ? cachedProducts
-        .map(
-          (p) =>
-            `<option value="${p.id}" data-price="${p.price}">${p.title}</option>`
-        )
-        .join("")
+          .map(
+            (p) =>
+              `<option value="${p.id}" data-price="${p.price}">${p.title}</option>`
+          )
+          .join("")
       : "<option value=''>Cadastre um produto primeiro</option>";
   }
 
   if (orderCoupon) {
     orderCoupon.innerHTML =
       "<option value=''>Nenhum</option>" +
-      cachedCoupons.map((c) => `<option value="${c.code}">${c.code}</option>`).join("");
+      cachedCoupons
+        .map((c) => `<option value="${c.code}">${c.code}</option>`)
+        .join("");
   }
 }
 
@@ -613,28 +697,30 @@ async function loadOrders() {
   attachOrderClickEvents();
 }
 
-document.getElementById("createOrderBtn")?.addEventListener("click", async () => {
-  if (!orderCustomer.value || !orderProduct.value || !orderTotal.value)
-    return alert("Selecione cliente, produto e informe total.");
+document
+  .getElementById("createOrderBtn")
+  ?.addEventListener("click", async () => {
+    if (!orderCustomer.value || !orderProduct.value || !orderTotal.value)
+      return alert("Selecione cliente, produto e informe total.");
 
-  const customer = cachedCustomers.find((c) => c.id === orderCustomer.value);
-  const product = cachedProducts.find((p) => p.id === orderProduct.value);
+    const customer = cachedCustomers.find((c) => c.id === orderCustomer.value);
+    const product = cachedProducts.find((p) => p.id === orderProduct.value);
 
-  await createOrder({
-    customerId: customer.id,
-    customerName: customer.name,
-    productId: product.id,
-    productTitle: product.title,
-    couponCode: orderCoupon.value || null,
-    total: parseFloat(orderTotal.value),
-    status: orderStatus.value,
-    paymentMethod: orderPayment.value
+    await createOrder({
+      customerId: customer.id,
+      customerName: customer.name,
+      productId: product.id,
+      productTitle: product.title,
+      couponCode: orderCoupon.value || null,
+      total: parseFloat(orderTotal.value),
+      status: orderStatus.value,
+      paymentMethod: orderPayment.value,
+    });
+
+    dashLog("Pedido registrado: " + customer.name);
+    orderTotal.value = "";
+    loadOrders();
   });
-
-  dashLog("Pedido registrado: " + customer.name);
-  orderTotal.value = "";
-  loadOrders();
-});
 
 /* =====================================================
    INIT
@@ -662,32 +748,41 @@ const modalCloseBtn = document.getElementById("modalCloseBtn");
 let currentOrderId = null;
 
 function openOrderModal(order) {
-  document.getElementById("modalCustomer").textContent = order.customerName || "-";
-  document.getElementById("modalWhatsapp").textContent = order.customerWhatsapp || "-";
+  document.getElementById("modalCustomer").textContent =
+    order.customerName || "-";
+  document.getElementById("modalWhatsapp").textContent =
+    order.customerWhatsapp || "-";
   document.getElementById("modalCep").textContent = order.cep || "-";
 
   if (order.address && typeof order.address === "object") {
     const a = order.address;
-    document.getElementById("modalAddress").textContent =
-      `${a.street}, ${a.number} – ${a.district}, ${a.city} / ${a.state}`;
+    document.getElementById(
+      "modalAddress"
+    ).textContent = `${a.street}, ${a.number} – ${a.district}, ${a.city} / ${a.state}`;
   } else {
     document.getElementById("modalAddress").textContent = "-";
   }
 
-  document.getElementById("modalTotal").textContent = (order.total || 0).toFixed(2);
+  document.getElementById("modalTotal").textContent = (
+    order.total || 0
+  ).toFixed(2);
 
   // MÉTODO DE PAGAMENTO (exibir + preencher select)
-  document.getElementById("modalPayment").textContent = order.paymentMethod || "-";
-  document.getElementById("modalPaymentMethod").value = order.paymentMethod || "PIX";
+  document.getElementById("modalPayment").textContent =
+    order.paymentMethod || "-";
+  document.getElementById("modalPaymentMethod").value =
+    order.paymentMethod || "PIX";
 
   // ITENS
   const list = document.getElementById("modalItems");
   list.innerHTML = "";
 
   if (Array.isArray(order.items) && order.items.length > 0) {
-    order.items.forEach(item => {
+    order.items.forEach((item) => {
       const li = document.createElement("li");
-      li.textContent = `${item.qty || 1}x ${item.title} — R$ ${item.price.toFixed(2)}`;
+      li.textContent = `${item.qty || 1}x ${
+        item.title
+      } — R$ ${item.price.toFixed(2)}`;
       list.appendChild(li);
     });
   } else {
@@ -705,11 +800,16 @@ function openOrderModal(order) {
     const newStatus = document.getElementById("modalStatus").value;
     const newPayment = document.getElementById("modalPaymentMethod").value;
 
-    await updateOrder(order.id, {
-      status: newStatus,
-      paymentMethod: newPayment,
-      updatedAt: new Date().toISOString()
-    });
+    const ref = doc(db, "orders", order.id);
+    await setDoc(
+      ref,
+      {
+        status: newStatus,
+        paymentMethod: newPayment,
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true }
+    );
 
     Swal.fire("OK!", "Pedido atualizado com sucesso.", "success");
     document.getElementById("orderModal").classList.add("hidden");
@@ -720,8 +820,6 @@ function openOrderModal(order) {
     document.getElementById("orderModal").classList.add("hidden");
   };
 }
-
-
 
 modalCloseBtn.onclick = () => {
   modal.classList.add("hidden");
@@ -737,7 +835,7 @@ modalSaveBtn.onclick = async () => {
   Swal.fire({
     icon: "success",
     title: "Status atualizado!",
-    timer: 1500
+    timer: 1500,
   });
 
   modal.classList.add("hidden");
@@ -777,8 +875,6 @@ const editPromo =
 
 const editPriceInput = document.getElementById("editPrice");
 
-
-
 let currentProductId = null;
 
 function calcFinal(original, promo) {
@@ -786,7 +882,6 @@ function calcFinal(original, promo) {
   const n = original - (original * promo) / 100;
   return n.toFixed(2);
 }
-
 
 function openProductModal(prod) {
   currentProductId = prod.id;
@@ -814,7 +909,6 @@ if (editPromo) {
   });
 }
 
-
 document.addEventListener("click", async (e) => {
   if (!e.target.matches("#saveProductBtn")) return;
   if (!currentProductId) return;
@@ -825,7 +919,7 @@ document.addEventListener("click", async (e) => {
 
   const ref = doc(db, "products", currentProductId);
 
-  const prod = cachedProducts.find(p => p.id === currentProductId);
+  const prod = cachedProducts.find((p) => p.id === currentProductId);
 
   // ✔️ Garante que originalPrice SEMPRE exista
   const originalPrice = Number(prod.originalPrice ?? prod.price);
@@ -834,7 +928,7 @@ document.addEventListener("click", async (e) => {
 
   if (promoPercent > 0) {
     newFinalPrice = Number(
-      (originalPrice - (originalPrice * promoPercent / 100)).toFixed(2)
+      (originalPrice - (originalPrice * promoPercent) / 100).toFixed(2)
     );
   }
 
@@ -844,18 +938,14 @@ document.addEventListener("click", async (e) => {
     promoPercent,
     price: newFinalPrice,
     brand: prod.brand || "Genérico",
-    model: prod.model || null
+    model: prod.model || null,
   });
-
 
   Swal.fire("Sucesso!", "Produto atualizado!", "success");
 
   productModal.classList.add("hidden");
   loadProducts(true);
 });
-
-
-
 
 /* abrir modal ao clicar no botão editar */
 listEl.addEventListener("click", (e) => {
@@ -866,14 +956,13 @@ listEl.addEventListener("click", (e) => {
   }
 });
 
-
 function updateFinalPriceDisplay() {
   const inputPrice = Number(editPriceInput.value || 0);
   const promoPercent = Number(editPromo.value || 0);
 
   let finalPrice = inputPrice;
   if (promoPercent > 0) {
-    finalPrice = inputPrice - (inputPrice * promoPercent / 100);
+    finalPrice = inputPrice - (inputPrice * promoPercent) / 100;
   }
 
   if (editFinalPrice) {
@@ -883,7 +972,7 @@ function updateFinalPriceDisplay() {
 window.toggleDestaque = async (id) => {
   const ref = doc(db, "products", id);
 
-  const prod = cachedProducts.find(p => p.id === id);
+  const prod = cachedProducts.find((p) => p.id === id);
   const newValue = !prod.destaque;
 
   await updateDoc(ref, { destaque: newValue });
@@ -902,7 +991,7 @@ document.getElementById("confirmImportBtn").onclick = async () => {
     categoryLabel: pendingImport.categoryLabel,
     brand: document.getElementById("previewBrand").value.trim() || "Genérico",
     model: document.getElementById("previewModel").value.trim() || null,
-    source: "yupoo"
+    source: "yupoo",
   });
 
   pendingImport = null;
@@ -911,7 +1000,6 @@ document.getElementById("confirmImportBtn").onclick = async () => {
   Swal.fire("Sucesso!", "Produto importado com sucesso!", "success");
   loadProducts(true);
 };
-
 
 document.getElementById("cancelImportBtn").onclick = () => {
   pendingImport = null;

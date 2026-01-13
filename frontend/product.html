@@ -1,477 +1,58 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
-<head>
-  <meta charset="UTF-8" />
-  <title>Produto · Hathor Imports</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="./assets/style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <style>
-    /* ========== HEADER PREMIUM ========== */
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      backdrop-filter: blur(14px);
-      background: rgba(0, 0, 0, 0.6);
-      padding: 14px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .logo-mark {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #ff007a, #ff5e00);
-      filter: drop-shadow(0px 0px 6px rgba(255, 0, 100, 0.4));
-    }
-
-    .logo-text {
-      display: flex;
-      flex-direction: column;
-      line-height: 0.9;
-      font-family: "Poppins", sans-serif;
-    }
-
-    .logo-title {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: #fff;
-    }
-
-    .logo-sub {
-      font-size: 0.7rem;
-      letter-spacing: 2px;
-      color: #fcb;
-    }
-
-    /* MENU */
-    .main-nav {
-      display: flex;
-      align-items: center;
-      gap: 32px;
-    }
-
-    .nav-link {
-      color: #e8e8e8;
-      font-size: 0.95rem;
-      font-weight: 500;
-      text-decoration: none;
-      transition: 0.2s ease;
-      position: relative;
-    }
-
-    .nav-link:hover {
-      color: #fff;
-    }
-
-    .nav-link::after {
-      content: "";
-      position: absolute;
-      width: 0%;
-      height: 2px;
-      background: #ff3465;
-      bottom: -4px;
-      left: 0;
-      transition: 0.25s ease;
-      border-radius: 4px;
-    }
-
-    .nav-link:hover::after {
-      width: 100%;
-    }
-
-    /* DROPDOWN */
-    .nav-dropdown {
-      position: relative;
-    }
-
-    .dropdown-menu {
-      position: absolute;
-      top: 28px;
-      background: #111;
-      padding: 14px 18px;
-      border-radius: 10px;
-      min-width: 180px;
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      animation: fadeIn 0.25s ease;
-    }
-
-    .dropdown-menu a {
-      color: #eee;
-      text-decoration: none;
-      font-size: 0.9rem;
-      transition: 0.2s;
-    }
-
-    .dropdown-menu a:hover {
-      color: #ff2966;
-    }
-
-    .nav-dropdown:hover .dropdown-menu {
-      display: flex;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(6px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* BOTÕES */
-    .btn-outline {
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      font-size: 0.9rem;
-      color: #fff;
-      background: transparent;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .btn-outline:hover {
-      border-color: #ff2966;
-      color: #ff2966;
-    }
-
-    .product-container {
-      max-width: 1200px;
-      margin: 60px auto;
-      display: grid;
-      grid-template-columns: 520px 1fr;
-      gap: 60px;
-      align-items: flex-start;
-    }
-
-
-    .product-container.promo {
-      position: relative;
-      border: 3px solid #ff007a;
-      background: rgba(255, 0, 122, 0.07);
-      box-shadow: 0 0 18px rgba(255, 0, 122, 0.5);
-    }
-
-    .promo-badge {
-      position: absolute;
-      z-index: 999;
-      top: 10px;
-      right: -32px;
-      background: #ff007a;
-      color: #fff;
-      padding: 6px 42px;
-      transform: rotate(45deg);
-      font-size: 14px;
-      font-weight: bold;
-      text-transform: uppercase;
-      pointer-events: none;
-      box-shadow: 0 0 10px rgba(255, 0, 122, 0.6);
-    }
-
-    .old-price {
-      text-decoration: line-through;
-      color: #bbb;
-      font-size: 1.2rem;
-    }
-
-    .new-price {
-      font-weight: 900;
-      color: #ff007a;
-      font-size: 2rem;
-    }
-
-    .save-tag {
-      font-size: .95rem;
-      font-weight: bold;
-      color: #4ade80;
-    }
-
-    .installments {
-      margin: 6px 0 12px 0;
-      font-size: .9rem;
-      color: #fff;
-    }
-
-    .product-main-img {
-      width: 380px;
-      height: 380px;
-      object-fit: cover;
-      border-radius: 14px;
-    }
-
-    .thumbs img {
-      width: 70px;
-      height: 70px;
-      object-fit: cover;
-      border-radius: 8px;
-      cursor: pointer;
-      opacity: .7;
-    }
-
-    .thumbs img:hover {
-      opacity: 1;
-      scale: 1.05;
-    }
-
-    .btn-cart {
-      background-color: #ff007a;
-      padding: 12px 25px;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 1.1rem;
-      cursor: pointer;
-      font-weight: bold;
-      border: none;
-    }
-  </style>
-  <style>
-    .product-container {
-      max-width: 1200px;
-      margin: 60px auto;
-      display: grid;
-      grid-template-columns: 520px 1fr;
-      gap: 60px;
-      align-items: flex-start;
-    }
-
-
-    .product-main-img {
-      width: 100%;
-      border-radius: 14px;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
-    }
-
-    .thumbs {
-      margin-top: 15px;
-      display: flex;
-      gap: 12px;
-      overflow-x: auto;
-    }
-
-    .thumbs img {
-      width: 90px;
-      height: 90px;
-      object-fit: cover;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: 0.2s;
-      border: 2px solid transparent;
-    }
-
-    .thumbs img:hover {
-      transform: scale(1.05);
-      border-color: #000;
-    }
-
-    .product-title {
-      font-size: 32px;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-
-    .product-price {
-      font-size: 28px;
-      font-weight: 600;
-      margin-bottom: 25px;
-    }
-
-    .btn-big {
-      width: 100%;
-      padding: 14px;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.2s;
-      border: none;
-    }
-
-    .btn-cart {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 11px 22px;
-      border-radius: 10px;
-      border: none;
-      background: linear-gradient(135deg, var(--hathor-pink), var(--hathor-orange));
-      color: #ffffff;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      box-shadow: 0 0 20px rgba(255, 0, 122, 0.4);
-      transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
-    }
-
-    .btn-cart:hover {
-      transform: translateY(-1px) scale(1.02);
-      box-shadow: 0 0 26px rgba(255, 0, 122, 0.65);
-      filter: brightness(1.03);
-    }
-
-    .btn-whatsapp {
-      background: #25D366;
-      margin-top: 10px;
-      color: #fff;
-    }
-
-    .btn-whatsapp:hover {
-      background: #1fb256;
-    }
-
-    .logo-img {
-      height: 48px;
-      width: auto;
-      object-fit: contain;
-      filter: drop-shadow(0 0 6px #ff00e6);
-    }
-
-    .hero-image-wrapper img {
-      width: 100%;
-      height: auto;
-      border-radius: 12px;
-      box-shadow: 0 0 25px rgba(255, 0, 200, 0.4);
-    }
-
-    /* ===== GALLERY PREMIUM ===== */
-
-    .gallery {
-      position: sticky;
-      top: 120px;
-    }
-
-    .product-main-img {
-      width: 100%;
-      aspect-ratio: 1/1;
-      object-fit: cover;
-      border-radius: 16px;
-      cursor: zoom-in;
-      transition: transform 0.3s ease;
-    }
-
-    .product-main-img:hover {
-      transform: scale(1.03);
-    }
-
-    .thumbs img.active {
-      border-color: #ff007a;
-      opacity: 1;
-      box-shadow: 0 0 0 2px rgba(255, 0, 122, 0.5);
-    }
-
-    /* ===== LIGHTBOX ===== */
-
-    .lightbox {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-
-    .lightbox img {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: 14px;
-    }
-
-    .lightbox-close {
-      position: absolute;
-      top: 20px;
-      right: 30px;
-      font-size: 34px;
-      color: #fff;
-      cursor: pointer;
-    }
-
-    /* ===== FIX GALERIA PRODUTO ===== */
-
-    .gallery {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      max-width: 520px;
-    }
-
-    .product-main-img {
-      width: 100%;
-      height: 520px;
-      object-fit: contain;
-      background: #0b0b0b;
-      border-radius: 18px;
-      padding: 10px;
-      cursor: zoom-in;
-    }
-
-    /* thumbs organizadas em grid */
-    .thumbs {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-      overflow: hidden;
-    }
-
-    .thumbs img {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      border-radius: 10px;
-      cursor: pointer;
-      opacity: 0.6;
-      border: 2px solid transparent;
-      transition: 0.2s;
-    }
-
-    .thumbs img:hover {
-      opacity: 1;
-      transform: scale(1.04);
-    }
-
-    .thumbs img.active {
-      opacity: 1;
-      border-color: #ff007a;
-      box-shadow: 0 0 0 2px rgba(255, 0, 122, 0.4);
-    }
-  </style>
-</head>
-
-<body>
-
-  <script src="/js/loadHeader.js" defer></script>
-
-  <main>
-    <section id="productDetail" class="loading">
-      <p>Carregando...</p>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <p class="footer-copy">© <span id="year"></span> Hathor Imports</p>
-  </footer>
-
-  <script type="module" src="./js/product-page.js"></script>
-</body>
-
+  <head>
+    <meta charset="UTF-8" />
+    <title>Produto · Hathor Imports</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Confira os detalhes deste produto premium importado"
+    />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="./assets/style.css" />
+    <link rel="stylesheet" href="./assets/product-styles.css" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="product" />
+    <meta property="og:site_name" content="Hathor Imports" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+
+  <body>
+    <!-- Header -->
+    <script type="module">
+      import { loadHeader } from "./js/loadHeader.js";
+      loadHeader();
+    </script>
+
+    <!-- Main Content -->
+    <main id="productDetail">
+      <!-- Conteúdo será injetado via JavaScript -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-col">
+          <span class="footer-logo">Hathor Imports</span>
+          <p>Sneakers e streetwear premium importados.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Atendimento</h4>
+          <p>Faça seu pedido e entraremos em contato.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Informações</h4>
+          <p>Preços em R$ já incluem custos de importação.</p>
+        </div>
+      </div>
+      <p class="footer-copy">© <span id="year"></span> Hathor Imports</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script type="module" src="./js/product-page.js"></script>
+  </body>
 </html>

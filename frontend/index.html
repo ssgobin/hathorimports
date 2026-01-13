@@ -1,304 +1,305 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hathor Imports - Sneakers & Streetwear</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Hathor Imports - Loja de sneakers e streetwear premium importados com fotos reais."
+    />
 
-<head>
-  <meta charset="UTF-8" />
-  <title>Hathor Imports - Sneakers & Streetwear</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Hathor Imports - Loja de sneakers e streetwear premium importados com fotos reais.">
+    <link rel="stylesheet" href="./assets/style.css" />
 
-  <link rel="stylesheet" href="./assets/style.css" />
-
-  <style>
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      backdrop-filter: blur(14px);
-      background: rgba(0, 0, 0, 0.6);
-      padding: 14px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .logo-mark {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #ff007a, #ff5e00);
-      filter: drop-shadow(0px 0px 6px rgba(255, 0, 100, 0.4));
-    }
-
-    .logo-text {
-      display: flex;
-      flex-direction: column;
-      line-height: 0.9;
-      font-family: "Poppins", sans-serif;
-    }
-
-    .logo-title {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: #fff;
-    }
-
-    .logo-sub {
-      font-size: 0.7rem;
-      letter-spacing: 2px;
-      color: #fcb;
-    }
-
-    /* MENU */
-    .main-nav {
-      display: flex;
-      align-items: center;
-      gap: 32px;
-    }
-
-    .nav-link {
-      color: #e8e8e8;
-      font-size: 0.95rem;
-      font-weight: 500;
-      text-decoration: none;
-      transition: 0.2s ease;
-      position: relative;
-    }
-
-    .nav-link:hover {
-      color: #fff;
-    }
-
-    .nav-link::after {
-      content: "";
-      position: absolute;
-      width: 0%;
-      height: 2px;
-      background: #ff3465;
-      bottom: -4px;
-      left: 0;
-      transition: 0.25s ease;
-      border-radius: 4px;
-    }
-
-    .nav-link:hover::after {
-      width: 100%;
-    }
-
-    /* DROPDOWN */
-    .nav-dropdown {
-      position: relative;
-    }
-
-    .dropdown-menu {
-      position: absolute;
-      top: 28px;
-      background: #111;
-      padding: 14px 18px;
-      border-radius: 10px;
-      min-width: 180px;
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      animation: fadeIn 0.25s ease;
-    }
-
-    .dropdown-menu a {
-      color: #eee;
-      text-decoration: none;
-      font-size: 0.9rem;
-      transition: 0.2s;
-    }
-
-    .dropdown-menu a:hover {
-      color: #ff2966;
-    }
-
-    .nav-dropdown:hover .dropdown-menu {
-      display: flex;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(6px);
+    <style>
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(14px);
+        background: rgba(0, 0, 0, 0.6);
+        padding: 14px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       }
 
-      to {
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .logo-mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #ff007a, #ff5e00);
+        filter: drop-shadow(0px 0px 6px rgba(255, 0, 100, 0.4));
+      }
+
+      .logo-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 0.9;
+        font-family: "Poppins", sans-serif;
+      }
+
+      .logo-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #fff;
+      }
+
+      .logo-sub {
+        font-size: 0.7rem;
+        letter-spacing: 2px;
+        color: #fcb;
+      }
+
+      /* MENU */
+      .main-nav {
+        display: flex;
+        align-items: center;
+        gap: 32px;
+      }
+
+      .nav-link {
+        color: #e8e8e8;
+        font-size: 0.95rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: 0.2s ease;
+        position: relative;
+      }
+
+      .nav-link:hover {
+        color: #fff;
+      }
+
+      .nav-link::after {
+        content: "";
+        position: absolute;
+        width: 0%;
+        height: 2px;
+        background: #ff3465;
+        bottom: -4px;
+        left: 0;
+        transition: 0.25s ease;
+        border-radius: 4px;
+      }
+
+      .nav-link:hover::after {
+        width: 100%;
+      }
+
+      /* DROPDOWN */
+      .nav-dropdown {
+        position: relative;
+      }
+
+      .dropdown-menu {
+        position: absolute;
+        top: 28px;
+        background: #111;
+        padding: 14px 18px;
+        border-radius: 10px;
+        min-width: 180px;
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        animation: fadeIn 0.25s ease;
+      }
+
+      .dropdown-menu a {
+        color: #eee;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: 0.2s;
+      }
+
+      .dropdown-menu a:hover {
+        color: #ff2966;
+      }
+
+      .nav-dropdown:hover .dropdown-menu {
+        display: flex;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* BOTÕES */
+      .btn-outline {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 0.9rem;
+        color: #fff;
+        background: transparent;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+
+      .btn-outline:hover {
+        border-color: #ff2966;
+        color: #ff2966;
+      }
+
+      .logo-img {
+        height: 48px;
+        width: auto;
+        object-fit: contain;
+        filter: drop-shadow(0 0 6px #ff00e6);
+      }
+
+      .hero-image-wrapper img {
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+        box-shadow: 0 0 25px rgba(255, 0, 200, 0.4);
+      }
+
+      /* ===== Carrossel Ajustado ===== */
+
+      .highlight-track {
+        display: flex;
+        gap: 18px;
+        padding: 12px;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+      }
+
+      .highlight-track::-webkit-scrollbar {
+        height: 6px;
+      }
+
+      .highlight-track::-webkit-scrollbar-thumb {
+        background: #ff007a;
+        border-radius: 4px;
+      }
+
+      /* ===== Cards menores ===== */
+
+      .product-card {
+        width: 220px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 14px;
+        padding: 10px;
+        transition: 0.25s ease;
+      }
+
+      .product-card:hover {
+        transform: translateY(-6px);
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .product-thumb {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 10px;
+      }
+
+      .product-info h3 {
+        font-size: 0.95rem;
+        margin-bottom: 6px;
+      }
+
+      .product-info p {
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      /* Botões de navegação reposicionados */
+      .nav-btn {
+        top: 42%;
+        opacity: 0.8;
+      }
+
+      .nav-btn:hover {
         opacity: 1;
-        transform: translateY(0);
       }
-    }
 
-    /* BOTÕES */
-    .btn-outline {
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      font-size: 0.9rem;
-      color: #fff;
-      background: transparent;
-      cursor: pointer;
-      transition: 0.2s;
-    }
+      .highlight-track {
+        overflow-y: hidden;
+        /* remove barra vertical */
+      }
 
-    .btn-outline:hover {
-      border-color: #ff2966;
-      color: #ff2966;
-    }
+      .highlight-wrapper {
+        overflow-y: hidden;
+        /* remove qualquer resquício */
+      }
+    </style>
+  </head>
 
-    .logo-img {
-      height: 48px;
-      width: auto;
-      object-fit: contain;
-      filter: drop-shadow(0 0 6px #ff00e6);
-    }
+  <body>
+    <script type="module">
+      import { loadHeader } from "./js/loadHeader.js";
+      loadHeader();
+    </script>
 
-    .hero-image-wrapper img {
-      width: 100%;
-      height: auto;
-      border-radius: 12px;
-      box-shadow: 0 0 25px rgba(255, 0, 200, 0.4);
-    }
-
-    /* ===== Carrossel Ajustado ===== */
-
-    .highlight-track {
-      display: flex;
-      gap: 18px;
-      padding: 12px;
-      overflow-x: auto;
-      scroll-behavior: smooth;
-    }
-
-    .highlight-track::-webkit-scrollbar {
-      height: 6px;
-    }
-
-    .highlight-track::-webkit-scrollbar-thumb {
-      background: #ff007a;
-      border-radius: 4px;
-    }
-
-    /* ===== Cards menores ===== */
-
-    .product-card {
-      width: 220px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 14px;
-      padding: 10px;
-      transition: 0.25s ease;
-    }
-
-    .product-card:hover {
-      transform: translateY(-6px);
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    .product-thumb {
-      width: 100%;
-      height: 160px;
-      object-fit: cover;
-      border-radius: 10px;
-    }
-
-    .product-info h3 {
-      font-size: 0.95rem;
-      margin-bottom: 6px;
-    }
-
-    .product-info p {
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-
-    /* Botões de navegação reposicionados */
-    .nav-btn {
-      top: 42%;
-      opacity: 0.8;
-    }
-
-    .nav-btn:hover {
-      opacity: 1;
-    }
-
-    .highlight-track {
-      overflow-y: hidden;
-      /* remove barra vertical */
-    }
-
-    .highlight-wrapper {
-      overflow-y: hidden;
-      /* remove qualquer resquício */
-    }
-  </style>
-</head>
-
-<body>
-
-  <script src="/js/loadHeader.js" defer></script>
-
-  <main class="page">
-
-    <!-- HERO -->
-    <section class="hero">
-      <div class="hero-media">
-        <div class="hero-image-wrapper">
-          <img src="./assets/hathor-banner.png" alt="Banner Hathor Imports" />
+    <main class="page">
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero-media">
+          <div class="hero-image-wrapper">
+            <img src="./assets/hathor-banner.png" alt="Banner Hathor Imports" />
+          </div>
         </div>
+        <div class="hero-copy">
+          <p class="hero-eyebrow">sneakers importados · fotos reais</p>
+          <h1>Seu próximo par favorito, no precinho.</h1>
+          <div class="hero-actions">
+            <a href="store.html" class="btn-primary">Ver produtos</a>
+          </div>
+        </div>
+      </section>
 
-      </div>
-      <div class="hero-copy">
-        <p class="hero-eyebrow">sneakers importados · fotos reais</p>
-        <h1>Seu próximo par favorito, no precinho.</h1>
-        <div class="hero-actions">
-          <a href="store.html" class="btn-primary">Ver produtos</a>
+      <!-- CATÁLOGO -->
+      <section class="highlight-area">
+        <h2>Produtos em Destaque ⭐</h2>
+        <p class="subtitle">Seleção especial escolhida a dedo</p>
+
+        <div class="highlight-wrapper">
+          <button class="nav-btn left">❮</button>
+          <div id="highlightTrack" class="highlight-track"></div>
+          <button class="nav-btn right">❯</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-col">
+          <span class="footer-logo">Hathor Imports</span>
+          <p>
+            Operação independente focada em sneakers e streetwear selecionados.
+          </p>
+        </div>
+        <div class="footer-col">
+          <h4>Atendimento</h4>
+          <p>Faça seu pedido e entraremos em contato.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Informações</h4>
+          <p>Preços em R$ já incluem custos de importação.</p>
         </div>
       </div>
-    </section>
+      <p class="footer-copy">© <span id="year"></span> Hathor Imports</p>
+    </footer>
 
-    <!-- CATÁLOGO -->
-    <section class="highlight-area">
-      <h2>Produtos em Destaque ⭐</h2>
-      <p class="subtitle">Seleção especial escolhida a dedo</p>
-
-      <div class="highlight-wrapper">
-        <button class="nav-btn left">❮</button>
-        <div id="highlightTrack" class="highlight-track"></div>
-        <button class="nav-btn right">❯</button>
-      </div>
-    </section>
-
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-      <div class="footer-col">
-        <span class="footer-logo">Hathor Imports</span>
-        <p>Operação independente focada em sneakers e streetwear selecionados.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Atendimento</h4>
-        <p>Faça seu pedido e entraremos em contato.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Informações</h4>
-        <p>Preços em R$ já incluem custos de importação.</p>
-      </div>
-    </div>
-    <p class="footer-copy">© <span id="year"></span> Hathor Imports</p>
-  </footer>
-
-  <script type="module" src="./js/home-page.js"></script>
-
-</body>
-
+    <script type="module" src="./js/home-page.js"></script>
+  </body>
 </html>

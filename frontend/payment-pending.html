@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagamento Pendente - Hathor Imports</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .payment-result {
+      max-width: 600px;
+      margin: 80px auto;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .result-icon {
+      font-size: 80px;
+      margin-bottom: 24px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+
+    .result-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: #f59e0b;
+      margin-bottom: 16px;
+    }
+
+    .result-message {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .result-info {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+      text-align: left;
+    }
+
+    .info-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #f59e0b;
+      margin-bottom: 16px;
+    }
+
+    .info-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .info-list li {
+      padding: 8px 0;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+    }
+
+    .info-list li::before {
+      content: "✓ ";
+      color: #f59e0b;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+
+    .result-details {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+      text-align: left;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 14px;
+    }
+
+    .detail-value {
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .result-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-primary-result {
+      padding: 16px 32px;
+      background: linear-gradient(135deg, #ff007a, #ff5e00);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary-result:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 30px rgba(255, 0, 122, 0.4);
+    }
+
+    .btn-secondary-result {
+      padding: 14px 32px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary-result:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header será carregado dinamicamente -->
+  <div id="header-container"></div>
+
+  <main class="payment-result">
+    <div class="result-icon">⏳</div>
+    <h1 class="result-title">Pagamento Pendente</h1>
+    <p class="result-message">
+      Seu pagamento está sendo processado.<br>
+      Você receberá uma confirmação em breve.
+    </p>
+
+    <div class="result-info">
+      <div class="info-title">O que acontece agora?</div>
+      <ul class="info-list">
+        <li>Estamos aguardando a confirmação do pagamento</li>
+        <li>Você receberá um e-mail assim que for aprovado</li>
+        <li>O prazo pode variar de acordo com o método de pagamento</li>
+        <li>Seu pedido será processado após a confirmação</li>
+      </ul>
+    </div>
+
+    <div class="result-details" id="payment-details">
+      <div class="detail-row">
+        <span class="detail-label">Status</span>
+        <span class="detail-value" style="color: #f59e0b;">Pendente</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">ID do Pagamento</span>
+        <span class="detail-value" id="payment-id">-</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Valor</span>
+        <span class="detail-value" id="payment-amount">-</span>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <a href="index.html" class="btn-primary-result">
+        🏠 Voltar para Início
+      </a>
+      <a href="store.html" class="btn-secondary-result">
+        🛍️ Continuar Comprando
+      </a>
+    </div>
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script type="module">
+    import { loadHeader } from './js/loadHeader.js';
+    import { checkPaymentStatus } from './js/mercadopago-integration.js';
+    import { clearCart } from './js/cart-improved.js';
+
+    // Carregar header
+    loadHeader();
+
+    // Limpar carrinho (pagamento pendente ainda conta como pedido realizado)
+    clearCart();
+
+    // Obter parâmetros da URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentId = urlParams.get('payment_id');
+    const status = urlParams.get('status');
+
+    // Exibir ID do pagamento
+    if (paymentId) {
+      document.getElementById('payment-id').textContent = paymentId;
+
+      // Buscar detalhes do pagamento
+      checkPaymentStatus(paymentId)
+        .then(payment => {
+          if (payment.transactionAmount) {
+            document.getElementById('payment-amount').textContent = 
+              new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+              }).format(payment.transactionAmount);
+          }
+        })
+        .catch(err => {
+          console.error('Erro ao buscar detalhes:', err);
+        });
+    }
+  </script>
+</body>
+</html>

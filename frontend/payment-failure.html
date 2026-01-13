@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagamento Recusado - Hathor Imports</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .payment-result {
+      max-width: 600px;
+      margin: 80px auto;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .result-icon {
+      font-size: 80px;
+      margin-bottom: 24px;
+      animation: shake 0.5s ease-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+      20%, 40%, 60%, 80% { transform: translateX(10px); }
+    }
+
+    .result-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: #ef4444;
+      margin-bottom: 16px;
+    }
+
+    .result-message {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .result-reasons {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+      text-align: left;
+    }
+
+    .reasons-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ef4444;
+      margin-bottom: 16px;
+    }
+
+    .reasons-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .reasons-list li {
+      padding: 8px 0;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+    }
+
+    .reasons-list li::before {
+      content: "• ";
+      color: #ef4444;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+
+    .result-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-primary-result {
+      padding: 16px 32px;
+      background: linear-gradient(135deg, #ff007a, #ff5e00);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary-result:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 30px rgba(255, 0, 122, 0.4);
+    }
+
+    .btn-secondary-result {
+      padding: 14px 32px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary-result:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .help-box {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 24px;
+    }
+
+    .help-text {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header será carregado dinamicamente -->
+  <div id="header-container"></div>
+
+  <main class="payment-result">
+    <div class="result-icon">❌</div>
+    <h1 class="result-title">Pagamento Recusado</h1>
+    <p class="result-message">
+      Infelizmente seu pagamento não pôde ser processado.<br>
+      Por favor, verifique os dados e tente novamente.
+    </p>
+
+    <div class="result-reasons">
+      <div class="reasons-title">Possíveis motivos:</div>
+      <ul class="reasons-list">
+        <li>Dados do cartão incorretos</li>
+        <li>Saldo insuficiente</li>
+        <li>Limite do cartão excedido</li>
+        <li>Cartão vencido ou bloqueado</li>
+        <li>Problemas com a operadora</li>
+      </ul>
+    </div>
+
+    <div class="result-actions">
+      <a href="checkout.html" class="btn-primary-result">
+        🔄 Tentar Novamente
+      </a>
+      <a href="cart.html" class="btn-secondary-result">
+        🛒 Voltar ao Carrinho
+      </a>
+      <a href="index.html" class="btn-secondary-result">
+        🏠 Ir para Início
+      </a>
+    </div>
+
+    <div class="help-box">
+      <p class="help-text">
+        💬 <strong>Precisa de ajuda?</strong><br>
+        Entre em contato conosco pelo WhatsApp e finalize seu pedido diretamente.
+      </p>
+    </div>
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script type="module">
+    import { loadHeader } from './js/loadHeader.js';
+
+    // Carregar header
+    loadHeader();
+
+    // Obter parâmetros da URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentId = urlParams.get('payment_id');
+    const status = urlParams.get('status');
+
+    console.log('Pagamento recusado:', { paymentId, status });
+  </script>
+</body>
+</html>

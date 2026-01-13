@@ -1,10 +1,14 @@
-import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {
+  initializeApp,
+  getApps,
+  getApp,
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
   getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
 import { getUserData } from "./user.js";
@@ -16,14 +20,20 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
 /* ======================================================
-   SALVAR USUÁRIO LOCAL
+   SALVAR USUÁRIO LOCAL E TOKEN
 ====================================================== */
 async function cacheUser(user) {
   if (!user) {
     localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
     return;
   }
 
+  // Obter token JWT do Firebase
+  const token = await user.getIdToken();
+  localStorage.setItem("authToken", token);
+
+  // Salvar dados do usuário
   const data = await getUserData(user.uid);
   localStorage.setItem("user", JSON.stringify(data));
 }
@@ -82,6 +92,7 @@ export function handleAuthButtons() {
 
 export function logout() {
   localStorage.removeItem("user");
+  localStorage.removeItem("authToken");
   signOut(auth);
 }
 
@@ -92,4 +103,3 @@ export function loginWithEmail(email, password) {
 export function registerWithEmail(email, password) {
   return createUserWithEmailAndPassword(auth, email, password);
 }
-
