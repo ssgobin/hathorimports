@@ -34,8 +34,11 @@ export async function createPaymentPreference(orderData) {
       orderData;
 
     // Debug: verificar o que está chegando
-    console.log('🔍 Debug - orderData recebido:', JSON.stringify(orderData, null, 2));
-    console.log('🔍 Debug - backUrls:', backUrls);
+    console.log(
+      "🔍 Debug - orderData recebido:",
+      JSON.stringify(orderData, null, 2)
+    );
+    console.log("🔍 Debug - backUrls:", backUrls);
 
     const preferenceData = {
       items: items.map((item) => ({
@@ -89,11 +92,18 @@ export async function createPaymentPreference(orderData) {
       statement_descriptor: "HATHOR IMPORTS",
 
       payment_methods: {
+        // Não excluir nenhum método de pagamento
         excluded_payment_methods: [],
         excluded_payment_types: [],
+        // Permitir parcelamento em até 12x
         installments: 12,
         default_installments: 1,
+        // Métodos aceitos: credit_card, debit_card, ticket (boleto), bank_transfer (PIX)
+        // Deixar vazio para aceitar todos
       },
+
+      // Configurações adicionais para aceitar mais métodos
+      binary_mode: false, // Permite pagamentos pendentes (boleto, PIX)
 
       shipments: {
         cost: 0,

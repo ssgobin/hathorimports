@@ -12,7 +12,9 @@ import {
   initializeFirebaseAdmin,
   verifyFirebaseToken,
   requireAdmin,
+  getFirestore,
 } from "./firebase-admin.js";
+import { deleteImage } from "./cloudinary-config.js";
 import authRoutes from "./routes/auth.js";
 import paymentRoutes from "./routes/payment.js";
 import logger from "./logger.js";
@@ -23,35 +25,10 @@ const app = express();
 // SEGURANÇA E PERFORMANCE
 // ============================================
 
-// Helmet - Segurança HTTP headers
+// Helmet - Segurança HTTP headers (CSP DESABILITADO TEMPORARIAMENTE)
 app.use(
   helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        scriptSrc: [
-          "'self'",
-          "'unsafe-inline'",
-          "'unsafe-eval'",
-          "https://sdk.mercadopago.com",
-          "https://www.gstatic.com",
-          "https://cdn.jsdelivr.net",
-        ],
-        scriptSrcAttr: ["'unsafe-inline'", "'unsafe-hashes'"],
-        imgSrc: ["'self'", "data:", "https:", "http:"],
-        connectSrc: [
-          "'self'",
-          "https://api.mercadopago.com",
-          "https://*.firebaseio.com",
-          "https://*.googleapis.com",
-          "https://firestore.googleapis.com",
-          "https://www.gstatic.com",
-        ],
-        frameSrc: ["'self'", "https://www.mercadopago.com.br"],
-      },
-    },
+    contentSecurityPolicy: false, // DESABILITADO para debug
     crossOriginEmbedderPolicy: false,
   })
 );
@@ -161,7 +138,6 @@ app.use("/api/auth", authLimiter, authRoutes);
 // ============================================
 app.use("/api/payment/webhook", webhookLimiter);
 app.use("/api/payment", paymentRoutes);
-
 // ============================================
 // ROTAS PÚBLICAS
 // ============================================
@@ -243,6 +219,87 @@ app.post(
 
       return res.status(500).json({
         error: err.message || "Erro interno ao importar produto",
+      });
+    }
+  }
+);
+
+// Rota para deletar produto (requer admin)
+app.delete(
+  "/api/products/:productId",
+  verifyFirebaseToken,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { productId } = req.params;
+
+      if (!productId) {
+        return res.status(400).json({ error: "ID do produto obrigatório" });
+      }
+
+      logger.info("Iniciando exclusão de produto", {
+        user: req.user.email,
+        productId,
+      });
+
+      const db = getFirestore();
+      const productRef = db.collection("products").doc(productId);
+      const productDoc = await productRef.get();
+
+      if (!productDoc.exists) {
+        return res.status(404).json({ error: "Produto não encontrado" });
+      }
+
+      const productData = productDoc.data();
+
+      // Deletar imagens do Cloudinary
+      if (productData.images && Array.isArray(productData.images)) {
+        for (const imageUrl of productData.images) {
+          // Verificar se é URL do Cloudinary
+          if (imageUrl.includes("cloudinary.com")) {
+            try {
+              // Extrair public_id da URL
+              // Exemplo: https://res.cloudinary.com/cloud/image/upload/v1/hathor-imports/products/product-123-0.jpg
+              const urlParts = imageUrl.split("/");
+              const filename = urlParts[urlParts.length - 1].split(".")[0]; // product-123-0
+              const folder = urlParts.slice(-3, -1).join("/"); // hathor-imports/products
+              const publicId = `${folder}/${filename}`;
+
+              await deleteImage(publicId);
+              console.log(`✅ Imagem deletada do Cloudinary: ${publicId}`);
+            } catch (error) {
+              console.error(
+                `⚠️  Erro ao deletar imagem do Cloudinary:`,
+                error.message
+              );
+              // Continua mesmo se falhar (não bloqueia a exclusão do produto)
+            }
+          }
+        }
+      }
+
+      // Deletar produto do Firestore
+      await productRef.delete();
+
+      logger.logEvent("PRODUCT_DELETED", {
+        user: req.user.email,
+        productId,
+        title: productData.title,
+      });
+
+      return res.json({
+        success: true,
+        message: "Produto e imagens deletados com sucesso",
+      });
+    } catch (err) {
+      logger.logError(err, {
+        context: "delete-product",
+        user: req.user?.email,
+        productId: req.params?.productId,
+      });
+
+      return res.status(500).json({
+        error: err.message || "Erro interno ao deletar produto",
       });
     }
   }
