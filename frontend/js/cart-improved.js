@@ -261,5 +261,3 @@ window.cartUtils = {
   removeCoupon,
   getCartSummary
 };
-
-// Made with Bob

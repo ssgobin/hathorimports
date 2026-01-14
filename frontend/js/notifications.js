@@ -315,5 +315,3 @@ notify.info('Leia nossos termos de uso', 'Importante', { duration: 0 });
 */
 
 export default notify;
-
-// Made with Bob

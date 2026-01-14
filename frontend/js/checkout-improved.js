@@ -588,5 +588,3 @@ if (document.readyState === "loading") {
 } else {
   initCheckout();
 }
-
-// Made with Bob

@@ -254,5 +254,3 @@ export async function importFromYupoo(url) {
     finalPriceBRL,
   };
 }
-
-// Made with Bob

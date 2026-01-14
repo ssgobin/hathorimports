@@ -496,39 +496,58 @@ async function loadCustomers() {
 
   customersList.innerHTML = "Carregando clientes...";
 
-  const usersRef = collection(db, "users");
-  const q = query(usersRef, where("role", "==", "customer"));
-  const snap = await getDocs(q);
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("role", "==", "customer"));
+    const snap = await getDocs(q);
 
-  const customers = snap.docs.map((d) => ({
-    id: d.id,
-    ...d.data(),
-  }));
+    const customers = snap.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+    }));
 
-  cachedCustomers = customers;
+    cachedCustomers = customers;
 
-  if (!customers.length) {
+    console.log(`📋 ${customers.length} cliente(s) carregado(s)`);
+
+    if (!customers.length) {
+      customersList.innerHTML =
+        "<p class='admin-list-item'>Nenhum cliente cadastrado.</p>";
+      return;
+    }
+
+    // Ordenar por data de criação (mais recente primeiro)
+    customers.sort((a, b) => {
+      const dateA = new Date(a.createdAt || 0);
+      const dateB = new Date(b.createdAt || 0);
+      return dateB - dateA;
+    });
+
+    customersList.innerHTML = customers
+      .map((c) => {
+        const createdDate = c.createdAt
+          ? new Date(c.createdAt).toLocaleDateString("pt-BR")
+          : "Data desconhecida";
+
+        return `
+        <div class="admin-list-item">
+          <strong>${c.name || "Sem nome"}</strong><br/>
+          📧 ${c.email || "-"}<br/>
+          📱 ${c.whatsapp || "-"}<br/>
+          <span style="font-size:0.75rem;color:#aaa">
+            Cadastrado em: ${createdDate}
+          </span>
+        </div>
+      `;
+      })
+      .join("");
+
+    populateSelectsForOrders();
+  } catch (error) {
+    console.error("❌ Erro ao carregar clientes:", error);
     customersList.innerHTML =
-      "<p class='admin-list-item'>Nenhum cliente cadastrado.</p>";
-    return;
+      "<p class='admin-list-item' style='color:red;'>Erro ao carregar clientes. Verifique o console.</p>";
   }
-
-  customersList.innerHTML = customers
-    .map(
-      (c) => `
-    <div class="admin-list-item">
-      <strong>${c.name || "Sem nome"}</strong><br/>
-      📧 ${c.email || "-"}<br/>
-      📱 ${c.whatsapp || "-"}<br/>
-      <span style="font-size:0.75rem;color:#aaa">
-        UID: ${c.uid || c.id}
-      </span>
-    </div>
-  `
-    )
-    .join("");
-
-  populateSelectsForOrders();
 }
 
 document
@@ -553,6 +572,14 @@ document
     customerWhatsapp.value = "";
     customerNotes.value = "";
 
+    loadCustomers();
+  });
+
+// Botão de atualizar lista de clientes
+document
+  .getElementById("refreshCustomersBtn")
+  ?.addEventListener("click", () => {
+    console.log("🔄 Atualizando lista de clientes...");
     loadCustomers();
   });
 
@@ -676,18 +703,74 @@ async function loadOrders() {
 
   ordersList.innerHTML = orders
     .map((o) => {
-      const created = o.createdAt?.toDate?.()
-        ? o.createdAt.toDate().toLocaleString("pt-BR")
-        : "";
+      // Suportar tanto pedidos antigos quanto novos do Mercado Pago
+      const customerName =
+        o.customer?.name || o.customerName || "Cliente não identificado";
+      const total = o.total || 0;
+      const status = o.status || "pending";
+      const orderId = o.orderId || o.id;
+
+      // Formatar data
+      let created = "";
+      if (o.createdAt) {
+        if (typeof o.createdAt === "string") {
+          created = new Date(o.createdAt).toLocaleString("pt-BR");
+        } else if (o.createdAt?.toDate) {
+          created = o.createdAt.toDate().toLocaleString("pt-BR");
+        }
+      }
+
+      // Status em português
+      const statusMap = {
+        pending: "Pendente",
+        approved: "Aprovado",
+        rejected: "Rejeitado",
+        cancelled: "Cancelado",
+        processing: "Processando",
+      };
+      const statusText = statusMap[status] || status;
+
+      // Ícone de status
+      const statusIcon = {
+        pending: "⏳",
+        approved: "✅",
+        rejected: "❌",
+        cancelled: "🚫",
+        processing: "⚙️",
+      };
+      const icon = statusIcon[status] || "📦";
 
       return `
-        <div class="admin-list-item order-click" data-id="${o.id}">
-          <strong>${o.customerName}</strong>
-          — R$ ${Number(o.total).toFixed(2)}
-          <br/>
-          <span>Status: ${o.status}</span>
-          <br/>
-          <span style="font-size:0.75rem;color:#888">${created}</span>
+        <div class="admin-list-item order-click" data-id="${
+          o.id
+        }" style="cursor:pointer;">
+          <div style="display:flex;justify-content:space-between;align-items:start;">
+            <div>
+              <strong>${icon} ${customerName}</strong>
+              <br/>
+              <span style="color:#059669;font-weight:600;">R$ ${Number(
+                total
+              ).toFixed(2)}</span>
+              <br/>
+              <span style="font-size:0.85rem;color:#6b7280;">
+                Status: <strong>${statusText}</strong>
+              </span>
+              ${
+                o.customer?.email
+                  ? `<br/><span style="font-size:0.8rem;color:#888;">📧 ${o.customer.email}</span>`
+                  : ""
+              }
+              ${
+                o.customer?.whatsapp
+                  ? `<br/><span style="font-size:0.8rem;color:#888;">📱 ${o.customer.whatsapp}</span>`
+                  : ""
+              }
+            </div>
+            <div style="text-align:right;font-size:0.75rem;color:#888;">
+              <div>${orderId}</div>
+              <div>${created}</div>
+            </div>
+          </div>
         </div>
       `;
     })
@@ -747,30 +830,46 @@ const modalCloseBtn = document.getElementById("modalCloseBtn");
 let currentOrderId = null;
 
 function openOrderModal(order) {
-  document.getElementById("modalCustomer").textContent =
-    order.customerName || "-";
-  document.getElementById("modalWhatsapp").textContent =
-    order.customerWhatsapp || "-";
-  document.getElementById("modalCep").textContent = order.cep || "-";
+  // Suportar tanto pedidos antigos quanto novos do Mercado Pago
+  const customerName =
+    order.customer?.name || order.customerName || "Não informado";
+  const customerEmail = order.customer?.email || order.customerEmail || "-";
+  const customerWhatsapp =
+    order.customer?.whatsapp || order.customerWhatsapp || "-";
 
-  if (order.address && typeof order.address === "object") {
-    const a = order.address;
-    document.getElementById(
-      "modalAddress"
-    ).textContent = `${a.street}, ${a.number} – ${a.district}, ${a.city} / ${a.state}`;
-  } else {
-    document.getElementById("modalAddress").textContent = "-";
+  // Dados de endereço
+  const shipping = order.shipping || order.address || {};
+  const cep = shipping.cep || order.cep || "-";
+
+  // Montar endereço completo
+  let addressText = "-";
+  if (shipping.street) {
+    addressText = `${shipping.street}, ${shipping.number || "S/N"}`;
+    if (shipping.complement) addressText += ` - ${shipping.complement}`;
+    addressText += ` – ${shipping.district || ""}, ${shipping.city || ""} / ${
+      shipping.state || ""
+    }`;
   }
 
+  // Preencher campos do modal
+  document.getElementById("modalCustomer").textContent = customerName;
+  document.getElementById("modalWhatsapp").textContent = customerWhatsapp;
+  document.getElementById("modalCep").textContent = cep;
+  document.getElementById("modalAddress").textContent = addressText;
   document.getElementById("modalTotal").textContent = (
     order.total || 0
   ).toFixed(2);
 
-  // MÉTODO DE PAGAMENTO (exibir + preencher select)
-  document.getElementById("modalPayment").textContent =
-    order.paymentMethod || "-";
-  document.getElementById("modalPaymentMethod").value =
-    order.paymentMethod || "PIX";
+  // Adicionar email se existir
+  const modalCustomerEl = document.getElementById("modalCustomer");
+  if (customerEmail !== "-") {
+    modalCustomerEl.innerHTML = `${customerName}<br/><small style="color:#888;">📧 ${customerEmail}</small>`;
+  }
+
+  // MÉTODO DE PAGAMENTO
+  const paymentMethod = order.paymentMethod || "Mercado Pago";
+  document.getElementById("modalPayment").textContent = paymentMethod;
+  document.getElementById("modalPaymentMethod").value = paymentMethod;
 
   // ITENS
   const list = document.getElementById("modalItems");
@@ -779,9 +878,23 @@ function openOrderModal(order) {
   if (Array.isArray(order.items) && order.items.length > 0) {
     order.items.forEach((item) => {
       const li = document.createElement("li");
-      li.textContent = `${item.qty || 1}x ${
-        item.title
-      } — R$ ${item.price.toFixed(2)}`;
+      const qty = item.quantity || item.qty || 1;
+      const title = item.name || item.title || "Produto";
+      const price = item.price || 0;
+      const subtotal = qty * price;
+
+      li.innerHTML = `
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;">
+          <div>
+            <strong>${qty}x ${title}</strong>
+            <br/>
+            <small style="color:#888;">R$ ${price.toFixed(2)} cada</small>
+          </div>
+          <div style="text-align:right;">
+            <strong style="color:#059669;">R$ ${subtotal.toFixed(2)}</strong>
+          </div>
+        </div>
+      `;
       list.appendChild(li);
     });
   } else {
@@ -789,57 +902,81 @@ function openOrderModal(order) {
   }
 
   // STATUS
-  document.getElementById("modalStatus").value = order.status || "pendente";
+  const statusMap = {
+    pending: "pending",
+    approved: "approved",
+    rejected: "rejected",
+    cancelled: "cancelled",
+    processing: "processing",
+    pendente: "pending",
+  };
+  const currentStatus = statusMap[order.status] || order.status || "pending";
+  document.getElementById("modalStatus").value = currentStatus;
+
+  // IDs do pedido
+  if (order.orderId || order.preferenceId) {
+    const idsDiv = document.createElement("div");
+    idsDiv.style.cssText =
+      "margin-top:10px;padding:10px;background:#f3f4f6;border-radius:8px;font-size:0.85rem;";
+    idsDiv.innerHTML = `
+      ${
+        order.orderId
+          ? `<div><strong>Order ID:</strong> ${order.orderId}</div>`
+          : ""
+      }
+      ${
+        order.preferenceId
+          ? `<div><strong>Preference ID:</strong> ${order.preferenceId}</div>`
+          : ""
+      }
+    `;
+    list.appendChild(idsDiv);
+  }
 
   // MOSTRAR MODAL
   document.getElementById("orderModal").classList.remove("hidden");
 
   // SALVAR ALTERAÇÕES
   document.getElementById("modalSaveBtn").onclick = async () => {
-    const newStatus = document.getElementById("modalStatus").value;
-    const newPayment = document.getElementById("modalPaymentMethod").value;
+    try {
+      console.log("🔄 Salvando alterações do pedido:", order.id);
 
-    const ref = doc(db, "orders", order.id);
-    await setDoc(
-      ref,
-      {
-        status: newStatus,
-        paymentMethod: newPayment,
-        updatedAt: new Date().toISOString(),
-      },
-      { merge: true }
-    );
+      const newStatus = document.getElementById("modalStatus").value;
+      const newPayment = document.getElementById("modalPaymentMethod").value;
 
-    Swal.fire("OK!", "Pedido atualizado com sucesso.", "success");
-    document.getElementById("orderModal").classList.add("hidden");
-    loadOrders();
+      console.log("📝 Novo status:", newStatus);
+      console.log("💳 Novo método de pagamento:", newPayment);
+
+      const ref = doc(db, "orders", order.id);
+      await setDoc(
+        ref,
+        {
+          status: newStatus,
+          paymentMethod: newPayment,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+
+      console.log("✅ Pedido atualizado com sucesso!");
+
+      Swal.fire("OK!", "Pedido atualizado com sucesso.", "success");
+      document.getElementById("orderModal").classList.add("hidden");
+      loadOrders();
+    } catch (error) {
+      console.error("❌ Erro ao salvar pedido:", error);
+      Swal.fire(
+        "Erro!",
+        "Não foi possível atualizar o pedido: " + error.message,
+        "error"
+      );
+    }
   };
 
   document.getElementById("modalCloseBtn").onclick = () => {
     document.getElementById("orderModal").classList.add("hidden");
   };
 }
-
-modalCloseBtn.onclick = () => {
-  modal.classList.add("hidden");
-};
-
-modalSaveBtn.onclick = async () => {
-  if (!currentOrderId) return;
-
-  const ref = doc(db, "orders", currentOrderId);
-
-  await setDoc(ref, { status: modalStatus.value }, { merge: true });
-
-  Swal.fire({
-    icon: "success",
-    title: "Status atualizado!",
-    timer: 1500,
-  });
-
-  modal.classList.add("hidden");
-  loadOrders();
-};
 
 /* =====================================================
    EVENTOS

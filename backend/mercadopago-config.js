@@ -247,5 +247,3 @@ export async function processWebhookNotification(notification) {
     };
   }
 }
-
-// Made with Bob

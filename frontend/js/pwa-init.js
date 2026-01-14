@@ -286,5 +286,3 @@ if (isPWA()) {
 }
 
 console.log("✅ PWA inicializado");
-
-// Made with Bob

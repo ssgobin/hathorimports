@@ -69,6 +69,18 @@ function renderGallery(images) {
   return `
     <div class="product-gallery">
       <div class="main-image-container">
+        ${
+          images.length > 1
+            ? `
+          <button class="gallery-nav gallery-nav-prev" onclick="previousImage()" aria-label="Imagem anterior">
+            ‹
+          </button>
+          <button class="gallery-nav gallery-nav-next" onclick="nextImage()" aria-label="Próxima imagem">
+            ›
+          </button>
+        `
+            : ""
+        }
         <img
           src="${mainImage}"
           alt="${currentProduct.title}"
@@ -77,6 +89,15 @@ function renderGallery(images) {
           onclick="openLightbox('${mainImage}')"
         />
         <div class="image-zoom-hint">🔍 Clique para ampliar</div>
+        ${
+          images.length > 1
+            ? `
+          <div class="image-counter">
+            ${currentImageIndex + 1} / ${images.length}
+          </div>
+        `
+            : ""
+        }
       </div>
       
       ${
@@ -275,6 +296,7 @@ window.changeImage = function (index) {
   currentImageIndex = index;
   const mainImg = document.getElementById("mainImg");
   const thumbs = document.querySelectorAll(".thumb");
+  const counter = document.querySelector(".image-counter");
 
   if (mainImg && currentProduct.images[index]) {
     mainImg.src = currentProduct.images[index];
@@ -282,7 +304,27 @@ window.changeImage = function (index) {
     thumbs.forEach((thumb, i) => {
       thumb.classList.toggle("active", i === index);
     });
+
+    if (counter) {
+      counter.textContent = `${currentImageIndex + 1} / ${currentProduct.images.length}`;
+    }
   }
+};
+
+window.nextImage = function () {
+  if (!currentProduct || !currentProduct.images) return;
+  
+  const nextIndex = (currentImageIndex + 1) % currentProduct.images.length;
+  changeImage(nextIndex);
+};
+
+window.previousImage = function () {
+  if (!currentProduct || !currentProduct.images) return;
+  
+  const prevIndex = currentImageIndex === 0
+    ? currentProduct.images.length - 1
+    : currentImageIndex - 1;
+  changeImage(prevIndex);
 };
 
 window.openLightbox = function (imageSrc) {
@@ -405,9 +447,14 @@ async function loadProduct() {
       return;
     }
 
-    // Garantir que images é um array
+    // Garantir que images é um array e filtrar apenas URLs válidas
     if (!currentProduct.images || !Array.isArray(currentProduct.images)) {
       currentProduct.images = [];
+    } else {
+      // Filtrar apenas imagens válidas (não vazias, não null, não undefined)
+      currentProduct.images = currentProduct.images.filter(
+        (img) => img && typeof img === "string" && img.trim().length > 0
+      );
     }
 
     // Renderizar página
@@ -436,7 +483,18 @@ async function loadProduct() {
   }
 }
 
+// ===== NAVEGAÇÃO POR TECLADO =====
+document.addEventListener('keydown', (e) => {
+  if (!currentProduct || !currentProduct.images || currentProduct.images.length <= 1) return;
+  
+  if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    previousImage();
+  } else if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    nextImage();
+  }
+});
+
 // ===== INICIALIZAR =====
 loadProduct();
-
-// Made with Bob

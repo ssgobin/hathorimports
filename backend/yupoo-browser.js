@@ -163,12 +163,14 @@ export async function downloadAndUploadImages(imageUrls, productId, albumUrl) {
     await browser.close();
   }
 
-  const successCount = cloudinaryUrls.filter((url) =>
-    url.includes("cloudinary")
-  ).length;
-  console.log(`✅ ${successCount}/${maxImages} imagens no Cloudinary`);
+  // Filtrar APENAS URLs do Cloudinary (remover Yupoo automaticamente)
+  const cloudinaryOnly = cloudinaryUrls.filter(
+    (url) => url && typeof url === "string" && url.includes("cloudinary")
+  );
 
-  return cloudinaryUrls;
+  console.log(`✅ ${cloudinaryOnly.length} imagens do Cloudinary (URLs do Yupoo removidas automaticamente)`);
+
+  return cloudinaryOnly;
 }
 
 async function autoScroll(page) {
@@ -188,5 +190,3 @@ async function autoScroll(page) {
     });
   });
 }
-
-// Made with Bob

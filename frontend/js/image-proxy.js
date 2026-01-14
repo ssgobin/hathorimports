@@ -29,5 +29,3 @@ export function getProxiedImageUrls(urls) {
   if (!Array.isArray(urls)) return [];
   return urls.map(getProxiedImageUrl);
 }
-
-// Made with Bob

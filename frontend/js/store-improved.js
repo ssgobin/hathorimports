@@ -482,5 +482,3 @@ clearFiltersBtn.addEventListener("click", () => {
 
 // ===== INICIALIZAÇÃO =====
 loadProducts();
-
-// Made with Bob

@@ -62,5 +62,3 @@ router.get("/check-admin", verifyFirebaseToken, requireAdmin, (req, res) => {
 });
 
 export default router;
-
-// Made with Bob

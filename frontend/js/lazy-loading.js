@@ -211,5 +211,3 @@ export { LazyLoader, lazyLoader };
 // Também disponibiliza globalmente
 window.LazyLoader = LazyLoader;
 window.lazyLoader = lazyLoader;
-
-// Made with Bob

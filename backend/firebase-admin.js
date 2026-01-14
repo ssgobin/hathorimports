@@ -204,5 +204,3 @@ export async function requireAdmin(req, res, next) {
 }
 
 export default admin;
-
-// Made with Bob

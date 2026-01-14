@@ -25,11 +25,12 @@ const app = express();
 // SEGURANÇA E PERFORMANCE
 // ============================================
 
-// Helmet - Segurança HTTP headers (CSP DESABILITADO TEMPORARIAMENTE)
+// Helmet - Segurança HTTP headers (CSP desabilitado para compatibilidade)
 app.use(
   helmet({
-    contentSecurityPolicy: false, // DESABILITADO para debug
+    contentSecurityPolicy: false, // Desabilitado - causa problemas com onclick e scripts inline
     crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
   })
 );
 

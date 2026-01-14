@@ -95,6 +95,68 @@
   opacity: 1;
 }
 
+/* Setas de Navegação */
+.gallery-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 32px;
+  font-weight: 300;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.main-image-container:hover .gallery-nav {
+  opacity: 1;
+}
+
+.gallery-nav:hover {
+  background: rgba(255, 0, 122, 0.8);
+  border-color: rgba(255, 0, 122, 0.5);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.gallery-nav:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.gallery-nav-prev {
+  left: 20px;
+}
+
+.gallery-nav-next {
+  right: 20px;
+}
+
+/* Contador de Imagens */
+.image-counter {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 10;
+}
+
 /* Thumbnails */
 .product-thumbs {
   display: grid;
@@ -103,13 +165,16 @@
 }
 
 .thumb {
+  width: 100%;
   aspect-ratio: 1/1;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 12px;
   cursor: pointer;
   opacity: 0.5;
   border: 2px solid transparent;
   transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px;
 }
 
 .thumb:hover {
@@ -496,5 +561,3 @@
     padding: 12px 20px;
   }
 }
-
-/* Made with Bob */

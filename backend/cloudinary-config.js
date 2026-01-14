@@ -77,5 +77,3 @@ export function isCloudinaryConfigured() {
 }
 
 export default cloudinary;
-
-// Made with Bob

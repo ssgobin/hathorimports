@@ -251,5 +251,3 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 console.log('[SW] Service Worker carregado');
-
-// Made with Bob

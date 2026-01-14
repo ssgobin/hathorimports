@@ -100,5 +100,3 @@ logger.logEvent = (event, data = {}) => {
 };
 
 export default logger;
-
-// Made with Bob

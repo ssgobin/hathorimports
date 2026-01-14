@@ -242,7 +242,23 @@
             >
               Salvar cliente
             </button>
-            <h3 style="margin-top: 20px">Clientes cadastrados</h3>
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 20px;
+              "
+            >
+              <h3 style="margin: 0">Clientes cadastrados</h3>
+              <button
+                id="refreshCustomersBtn"
+                class="btn-outline"
+                style="padding: 8px 16px"
+              >
+                🔄 Atualizar
+              </button>
+            </div>
             <div id="customersList" class="admin-list-block"></div>
           </div>
         </section>
@@ -390,10 +406,11 @@
 
           <label><strong>Status do Pedido</strong></label>
           <select id="modalStatus">
-            <option value="pendente">Pendente</option>
-            <option value="pago">Pago</option>
-            <option value="enviado">Enviado</option>
-            <option value="cancelado">Cancelado</option>
+            <option value="pending">⏳ Pendente</option>
+            <option value="approved">✅ Aprovado</option>
+            <option value="processing">⚙️ Processando</option>
+            <option value="rejected">❌ Rejeitado</option>
+            <option value="cancelled">🚫 Cancelado</option>
           </select>
         </div>
 

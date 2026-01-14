@@ -139,5 +139,3 @@ export async function uploadMultipleImages(yupooUrls, maxConcurrent = 3) {
 
   return results;
 }
-
-// Made with Bob

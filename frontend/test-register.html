@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Teste de Registro</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 500px;
+        margin: 50px auto;
+        padding: 20px;
+      }
+      input,
+      button {
+        display: block;
+        width: 100%;
+        margin: 10px 0;
+        padding: 10px;
+      }
+      #result {
+        margin-top: 20px;
+        padding: 10px;
+        background: #f0f0f0;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Teste de Captura de Nome</h1>
+
+    <label>Nome:</label>
+    <input id="name" type="text" placeholder="Digite seu nome" />
+
+    <label>WhatsApp:</label>
+    <input id="whatsapp" type="text" placeholder="19981050194" />
+
+    <label>Email:</label>
+    <input id="email" type="email" placeholder="teste@email.com" />
+
+    <button id="testBtn">Testar Captura</button>
+
+    <div id="result"></div>
+
+    <script>
+      document.getElementById("testBtn").addEventListener("click", () => {
+        const nameInput = document.getElementById("name");
+        const whatsappInput = document.getElementById("whatsapp");
+        const emailInput = document.getElementById("email");
+
+        const name = nameInput?.value.trim() || "";
+        const whatsapp = whatsappInput?.value.trim() || "";
+        const email = emailInput?.value.trim() || "";
+
+        const result = document.getElementById("result");
+        result.innerHTML = `
+        <h3>Dados Capturados:</h3>
+        <p><strong>Nome:</strong> "${name}"</p>
+        <p><strong>Nome vazio?</strong> ${name === "" ? "SIM" : "NÃO"}</p>
+        <p><strong>WhatsApp:</strong> "${whatsapp}"</p>
+        <p><strong>Email:</strong> "${email}"</p>
+        <hr>
+        <p><strong>Objeto completo:</strong></p>
+        <pre>${JSON.stringify({ name, whatsapp, email }, null, 2)}</pre>
+      `;
+
+        console.log("📝 Dados capturados:", { name, whatsapp, email });
+      });
+    </script>
+  </body>
+</html>
