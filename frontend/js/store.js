@@ -1,4 +1,8 @@
-import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {
+  initializeApp,
+  getApps,
+  getApp,
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
   getFirestore,
   collection,
@@ -12,12 +16,14 @@ import {
   setDoc,
   deleteDoc,
   updateDoc,
-  increment
+  increment,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { firebaseConfig } from "./firebase-config.js";
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 const productsCol = collection(db, "products");
 const customersCol = collection(db, "customers");
@@ -54,18 +60,43 @@ export async function createProduct(data) {
     model: data.model || null,
     rawPriceYuan: data.rawPriceYuan || null,
 
-    createdAt: now
+    createdAt: now,
   };
-
-  console.log("🧾 PRODUTO SALVO:", payload);
 
   return addDoc(productsCol, payload);
 }
 
-
 export async function deleteProduct(productId) {
-  const ref = doc(db, "products", productId);
-  await deleteDoc(ref);
+  try {
+    // Chamar API do backend para deletar produto e imagens do Cloudinary
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error("Usuário não autenticado");
+    }
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(
+      `http://localhost:4000/api/products/${productId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Erro ao deletar produto");
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    throw error;
+  }
 }
 
 // SETTINGS
@@ -133,8 +164,8 @@ export async function getCoupon(code) {
       coupon = {
         id: docSnap.id,
         ...data,
-        uses: data.uses ?? 0,       // ← garante que venha corretamente
-        expiresAt: data.expiresAt || null
+        uses: data.uses ?? 0, // ← garante que venha corretamente
+        expiresAt: data.expiresAt || null,
       };
     }
   });
@@ -161,7 +192,7 @@ export async function useCoupon(code) {
   console.log(ref);
 
   await updateDoc(ref, {
-    uses: increment(1)   // ← mais seguro, mais rápido e não sobrescreve nada
+    uses: increment(1), // ← mais seguro, mais rápido e não sobrescreve nada
   });
 }
 
@@ -179,7 +210,7 @@ export async function listFeaturedProducts() {
     orderBy("createdAt", "desc")
   );
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 // PRODUTOS POR CATEGORIA
@@ -190,7 +221,7 @@ export async function listProductsByCategory(category) {
     orderBy("createdAt", "desc")
   );
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 const CACHE_KEY = "products_cache";
@@ -199,18 +230,21 @@ const CACHE_TIME = 1000 * 60 * 5; // 5 minutos
 export async function listProductsCached() {
   const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
 
-  if (cached && (Date.now() - cached.time < CACHE_TIME)) {
+  if (cached && Date.now() - cached.time < CACHE_TIME) {
     return cached.data;
   }
 
   const q = query(productsCol, orderBy("createdAt", "desc"));
   const snap = await getDocs(q);
-  const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-  localStorage.setItem(CACHE_KEY, JSON.stringify({
-    time: Date.now(),
-    data
-  }));
+  localStorage.setItem(
+    CACHE_KEY,
+    JSON.stringify({
+      time: Date.now(),
+      data,
+    })
+  );
 
   return data;
 }
@@ -220,7 +254,9 @@ const PRODUCTS_CACHE_TTL = 1000 * 60 * 5; // 5 minutos
 
 export async function prefetchProducts() {
   try {
-    const cached = JSON.parse(localStorage.getItem(PRODUCTS_CACHE_KEY) || "null");
+    const cached = JSON.parse(
+      localStorage.getItem(PRODUCTS_CACHE_KEY) || "null"
+    );
 
     if (cached && Date.now() - cached.time < PRODUCTS_CACHE_TTL) {
       return; // cache ainda válido
@@ -229,18 +265,17 @@ export async function prefetchProducts() {
     const q = query(productsCol, orderBy("createdAt", "desc"));
     const snap = await getDocs(q);
 
-    const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
     localStorage.setItem(
       PRODUCTS_CACHE_KEY,
       JSON.stringify({
         time: Date.now(),
-        data
+        data,
       })
     );
-
   } catch (err) {
-    console.warn("Prefetch falhou:", err.message);
+    // Silencioso
   }
 }
 
@@ -255,52 +290,30 @@ const ENABLE_PRELOAD_LOG = true; // 🔥 mude para false em produção
 export function preloadProductImages(products, limit = 12) {
   if (!Array.isArray(products)) return;
 
-  if (ENABLE_PRELOAD_LOG) {
-    console.group("🖼️ [PRELOAD] Iniciando preload de imagens");
-    console.log("Produtos recebidos:", products.length);
-    console.log("Limite aplicado:", limit);
-  }
+  products.slice(0, limit).forEach((p, index) => {
+    const imgs = p.images || [];
 
-  products
-    .slice(0, limit)
-    .forEach((p, index) => {
-      const imgs = p.images || [];
+    if (ENABLE_PRELOAD_LOG) {
+      console.group(`📦 Produto ${index + 1}: ${p.title || p.id}`);
+    }
 
-      if (ENABLE_PRELOAD_LOG) {
-        console.group(`📦 Produto ${index + 1}: ${p.title || p.id}`);
-      }
+    imgs.slice(0, 2).forEach((src, imgIndex) => {
+      if (!src) return;
 
-      imgs.slice(0, 2).forEach((src, imgIndex) => {
-        if (!src) return;
+      const img = new Image();
 
-        if (ENABLE_PRELOAD_LOG) {
-          console.log(`➡️ Preload imagem ${imgIndex + 1}:`, src);
-        }
+      img.onload = () => {};
 
-        const img = new Image();
+      img.onerror = () => {};
 
-        img.onload = () => {
-          if (ENABLE_PRELOAD_LOG) {
-            console.log("✅ Imagem carregada:", src);
-          }
-        };
-
-        img.onerror = () => {
-          if (ENABLE_PRELOAD_LOG) {
-            console.warn("❌ Erro ao carregar imagem:", src);
-          }
-        };
-
-        img.src = src;
-      });
-
-      if (ENABLE_PRELOAD_LOG) {
-        console.groupEnd();
-      }
+      img.src = src;
     });
 
+    if (ENABLE_PRELOAD_LOG) {
+      console.groupEnd();
+    }
+  });
+
   if (ENABLE_PRELOAD_LOG) {
-    console.groupEnd();
-    console.log("🟢 [PRELOAD] Finalizado");
   }
 }

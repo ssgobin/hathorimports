@@ -14,8 +14,6 @@ import {
 import { getUserData } from "./user.js";
 import { firebaseConfig } from "./firebase-config.js";
 
-console.log("AUTH MODULE LOADED:", import.meta.url);
-
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 

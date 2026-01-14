@@ -400,7 +400,6 @@ async function importar() {
     }
 
     const data = result.data;
-    console.log("Produto importado:", data);
 
     logStatus("Título bruto: " + (data.rawTitle || "N/A"));
     logStatus("Título final: " + (data.title || "Sem título"));

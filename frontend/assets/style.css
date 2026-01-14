@@ -45,7 +45,12 @@
 /* BODY */
 body {
   font-family: var(--font-main);
-  background: radial-gradient(circle at top left, #2a0036 0, #050509 45%, #000 100%);
+  background: radial-gradient(
+    circle at top left,
+    #2a0036 0,
+    #050509 45%,
+    #000 100%
+  );
   color: var(--c-light);
   -webkit-font-smoothing: antialiased;
 }
@@ -96,13 +101,13 @@ a {
 
 @keyframes subtle-glow {
   0% {
-    box-shadow: 0 0 0 rgba(255, 0, 122, 0.0);
+    box-shadow: 0 0 0 rgba(255, 0, 122, 0);
   }
   50% {
     box-shadow: 0 0 32px rgba(255, 0, 122, 0.35);
   }
   100% {
-    box-shadow: 0 0 0 rgba(255, 0, 122, 0.0);
+    box-shadow: 0 0 0 rgba(255, 0, 122, 0);
   }
 }
 
@@ -152,7 +157,13 @@ a {
   width: 34px;
   height: 34px;
   border-radius: 14px;
-  background: conic-gradient(from 210deg, var(--hathor-pink), var(--hathor-orange), #ffd1f5, var(--hathor-pink));
+  background: conic-gradient(
+    from 210deg,
+    var(--hathor-pink),
+    var(--hathor-orange),
+    #ffd1f5,
+    var(--hathor-pink)
+  );
   box-shadow: 0 0 18px rgba(255, 0, 130, 0.55);
 }
 
@@ -248,7 +259,8 @@ a {
   justify-content: center;
   cursor: pointer;
   color: #f9fafb;
-  transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+  transition: background var(--transition-fast),
+    border-color var(--transition-fast), transform var(--transition-fast);
 }
 
 .btn-outline:hover {
@@ -271,7 +283,8 @@ a {
   cursor: pointer;
   text-decoration: none;
   box-shadow: 0 0 20px rgba(255, 0, 122, 0.4);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
+  transition: transform var(--transition-fast),
+    box-shadow var(--transition-fast), filter var(--transition-fast);
 }
 
 .btn-primary:hover {
@@ -441,7 +454,12 @@ a {
 }
 
 .product-card {
-  background: radial-gradient(circle at top left, #201028 0, #090712 48%, #050509 100%);
+  background: radial-gradient(
+    circle at top left,
+    #201028 0,
+    #090712 48%,
+    #050509 100%
+  );
   border-radius: var(--radius-lg);
   padding: 12px 12px 16px;
   border: 1px solid rgba(148, 163, 184, 0.25);
@@ -451,7 +469,8 @@ a {
   gap: 8px;
   position: relative;
   overflow: hidden;
-  transition: transform var(--transition-med), box-shadow var(--transition-med), border-color var(--transition-med);
+  transition: transform var(--transition-med), box-shadow var(--transition-med),
+    border-color var(--transition-med);
 }
 
 /* GRID ESPECIAL PARA DESTAQUES NO INDEX */
@@ -508,7 +527,7 @@ a {
   top: 50%;
   z-index: 10;
   transform: translateY(-50%);
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   color: #fff;
   border: none;
   width: 40px;
@@ -524,12 +543,17 @@ a {
   background: #ff007a;
 }
 
-.nav-btn.left { left: -55px; }
-.nav-btn.right { right: -55px; }
+.nav-btn.left {
+  left: -55px;
+}
+.nav-btn.right {
+  right: -55px;
+}
 
 /* Oculta botão em telas pequenas */
 @media (max-width: 768px) {
-  .nav-btn.left, .nav-btn.right {
+  .nav-btn.left,
+  .nav-btn.right {
     display: none;
   }
 }
@@ -557,7 +581,6 @@ a {
   font-size: 1rem;
 }
 
-
 /* Responsivo para tablets */
 @media (max-width: 1024px) {
   .home-catalog #productList {
@@ -576,7 +599,11 @@ a {
   content: "";
   position: absolute;
   inset: -40%;
-  background: radial-gradient(circle at top, rgba(255, 0, 122, 0.14), transparent 55%);
+  background: radial-gradient(
+    circle at top,
+    rgba(255, 0, 122, 0.14),
+    transparent 55%
+  );
   opacity: 0;
   transition: opacity var(--transition-med);
 }
@@ -595,15 +622,20 @@ a {
   border-radius: 16px;
   overflow: hidden;
   background: #020617;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .product-thumb img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   transition: transform var(--transition-med);
+  background: #020617;
 }
 
 .product-card:hover .product-thumb img {
@@ -632,8 +664,6 @@ a {
   justify-content: space-between;
 }
 
-
-
 /* =========================================================
    PRODUTO DETALHE (product.html + product-detail)
 ========================================================= */
@@ -642,7 +672,12 @@ a {
   margin-top: 8px;
   border-radius: 22px;
   padding: 20px 18px;
-  background: radial-gradient(circle at top left, #241131 0, #090712 48%, #050509 100%);
+  background: radial-gradient(
+    circle at top left,
+    #241131 0,
+    #090712 48%,
+    #050509 100%
+  );
   border: 1px solid rgba(148, 163, 184, 0.35);
   box-shadow: var(--shadow-card);
 }
@@ -685,7 +720,8 @@ a {
   object-fit: cover;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: transform var(--transition-fast), border-color var(--transition-fast);
+  transition: transform var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .product-gallery-thumbs img:hover {
@@ -904,7 +940,8 @@ select:focus {
   font-size: 0.85rem;
   color: #9ca3af;
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+  transition: background var(--transition-fast), color var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .admin-menu-item:hover {
@@ -926,7 +963,8 @@ select:focus {
   font-size: 0.82rem;
   cursor: pointer;
   color: #e5e7eb;
-  transition: background var(--transition-fast), transform var(--transition-fast);
+  transition: background var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .admin-logout:hover {
@@ -1206,8 +1244,14 @@ select:focus {
 }
 
 @keyframes badgePop {
-  from { transform: scale(0.6); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .product-new-price {
@@ -1216,7 +1260,7 @@ select:focus {
   background: linear-gradient(135deg, #ff007a, #ff5e00);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 12px rgba(255,0,120,0.4));
+  filter: drop-shadow(0 0 12px rgba(255, 0, 120, 0.4));
 }
 .product-card {
   position: relative; /* garante que o badge use este card como referência */
@@ -1308,7 +1352,7 @@ select:focus {
   border-radius: 4px;
   text-transform: uppercase;
   transform: rotate(-5deg);
-  box-shadow: 0 0 6px rgba(255, 0, 122, .6);
+  box-shadow: 0 0 6px rgba(255, 0, 122, 0.6);
 }
 
 .old-price {
@@ -1350,7 +1394,7 @@ select:focus {
   border-radius: 4px;
   text-transform: uppercase;
   transform: rotate(-5deg);
-  box-shadow: 0 0 6px rgba(255, 0, 122, .6);
+  box-shadow: 0 0 6px rgba(255, 0, 122, 0.6);
 }
 
 .old-price {
