@@ -1,104 +1,163 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <title>Catálogo · Hathor Imports</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="./assets/style.css" />
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Catálogo · Hathor Imports</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Explore nosso catálogo completo de sneakers e streetwear importados"
+    />
+    <link rel="stylesheet" href="./assets/style.css" />
+    <link rel="stylesheet" href="./assets/store-styles.css" />
+  </head>
 
-<header class="topbar">
-  <nav class="main-nav">
-    <a href="./index.html" class="nav-link">Início</a>
-    <a href="./store.html" class="nav-link active">Produtos</a>
-    <a href="./cart.html" class="btn-outline">Carrinho 🛒</a>
-  </nav>
-</header>
+  <body>
+    <script type="module">
+      import { loadHeader } from "./js/loadHeader.js";
+      loadHeader();
+    </script>
 
-<main class="page">
+    <main class="page">
+      <section class="catalog-section">
+        <div class="catalog-layout">
+          <!-- ===== SIDEBAR DE FILTROS ===== -->
+          <aside class="filters">
+            <h3>🔍 Filtros</h3>
 
-<section class="catalog-section">
-  <h2>Todos os produtos</h2><br>
+            <!-- Busca -->
+            <div class="filter-group">
+              <label>Buscar</label>
+              <div class="search-container">
+                <input
+                  id="searchInput"
+                  type="text"
+                  placeholder="Nome, marca, modelo..."
+                  class="search-bar"
+                  autocomplete="off"
+                />
+                <span class="search-icon">🔎</span>
+                <button
+                  class="clear-search"
+                  id="clearSearch"
+                  aria-label="Limpar busca"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
 
-  <input id="searchInput"
-    type="text"
-    placeholder="Buscar por nome, categoria..."
-    class="search-bar"
-    style="width:100%;padding:10px;margin-bottom:14px;border-radius:8px;display: none;">
+            <!-- Categoria -->
+            <div class="filter-group">
+              <label>Categoria</label>
+              <select id="filterCategory">
+                <option value="">Todas</option>
+                <option value="sneakers">Tênis</option>
+                <option value="roupas">Roupas</option>
+                <option value="acessorios">Acessórios</option>
+                <option value="bolsas">Bolsas</option>
+                <option value="oculos">Óculos</option>
+              </select>
+            </div>
 
-  <div id="storeList" class="product-grid"></div>
-</section>
+            <!-- Marca -->
+            <div class="filter-group">
+              <label>Marca</label>
+              <select id="filterBrand">
+                <option value="">Todas</option>
+              </select>
+            </div>
 
-<br>
+            <!-- Modelo -->
+            <div class="filter-group">
+              <label>Modelo</label>
+              <select id="filterModel">
+                <option value="">Todos</option>
+              </select>
+            </div>
 
-</main>
+            <!-- Faixa de Preço -->
+            <div class="filter-group">
+              <label>Preço</label>
+              <select id="filterPrice">
+                <option value="">Todos</option>
+                <option value="0-200">Até R$ 200</option>
+                <option value="200-400">R$ 200 - R$ 400</option>
+                <option value="400-600">R$ 400 - R$ 600</option>
+                <option value="600-1000">R$ 600 - R$ 1000</option>
+                <option value="1000+">Acima de R$ 1000</option>
+              </select>
+            </div>
 
-<script type="module">
-  import { listProducts } from "./js/store.js";
+            <!-- Promoção -->
+            <div class="filter-group">
+              <label>
+                <input
+                  type="checkbox"
+                  id="filterPromo"
+                  style="margin-right: 8px"
+                />
+                Apenas em promoção
+              </label>
+            </div>
 
-  const list = document.getElementById("storeList");
-  const searchInput = document.getElementById("searchInput");
-  let cache = [];
+            <!-- Ações -->
+            <div class="filter-actions">
+              <button id="clearFilters" class="btn-filter btn-clear">
+                Limpar Filtros
+              </button>
+            </div>
+          </aside>
 
-  async function load() {
-    cache = await listProducts();
-    render(cache);
-  }
+          <!-- ===== ÁREA DE PRODUTOS ===== -->
+          <div class="products-area">
+            <!-- Filtros Ativos -->
+            <div id="activeFilters" class="active-filters"></div>
 
-  function render(items) {
-    if (!items.length) {
-      list.innerHTML = "<p>Nenhum produto encontrado.</p>";
-      return;
-    }
+            <!-- Ordenação e Contador -->
+            <div class="sort-container">
+              <div class="results-count" id="resultsCount">
+                <strong>0</strong> produtos encontrados
+              </div>
 
-    list.innerHTML = items.map((p) => {
-      const img = (p.images && p.images[0]) ||
-        "https://placehold.co/600x400?text=Hathor";
+              <div style="display: flex; align-items: center; gap: 12px">
+                <span class="sort-label">Ordenar por:</span>
+                <select id="sortSelect" class="sort-select">
+                  <option value="newest">Mais recentes</option>
+                  <option value="oldest">Mais antigos</option>
+                  <option value="price-asc">Menor preço</option>
+                  <option value="price-desc">Maior preço</option>
+                  <option value="name-asc">Nome (A-Z)</option>
+                  <option value="name-desc">Nome (Z-A)</option>
+                </select>
+              </div>
+            </div>
 
-      const original = Number(p.originalPrice || p.price || 0);
-      const final = Number(p.price || p.finalPrice || original);
-      const hasPromo = original > final;
-      const desconto = hasPromo ? Math.round(((original-final)/original)*100) : 0;
-
-      return `
-      <a href="./product.html?id=${p.id}" class="product-link">
-        <article class="product-card ${hasPromo ? "promo" : ""}">
-        
-          ${hasPromo ? `<div class="promo-badge">${desconto}% OFF</div>` : ""}
-          
-          <img src="${img}" class="product-thumb">
-          
-          <div class="product-info">
-            <h3>${p.title}</h3>
-
-            ${hasPromo ? `
-              <p class="old-price">R$ ${original.toFixed(2)}</p>
-              <p class="new-price">R$ ${final.toFixed(2)}</p>
-              <p class="save-tag">Economize ${desconto}% 🤑</p>
-            ` : `
-              <p class="product-price">R$ ${final.toFixed(2)}</p>
-            `}
+            <!-- Grid de Produtos -->
+            <div id="storeList" class="product-grid"></div>
           </div>
+        </div>
+      </section>
+    </main>
 
-        </article>
-      </a>
-      `;
-    }).join("");
-  }
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-col">
+          <span class="footer-logo">Hathor Imports</span>
+          <p>Sneakers e streetwear premium importados.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Atendimento</h4>
+          <p>Faça seu pedido e entraremos em contato.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Informações</h4>
+          <p>Preços em R$ já incluem custos de importação.</p>
+        </div>
+      </div>
+      <p class="footer-copy">© <span id="year"></span> Hathor Imports</p>
+    </footer>
 
-  searchInput.addEventListener("input", () => {
-    const q = searchInput.value.toLowerCase();
-    const filtered = cache.filter(p =>
-      p.title.toLowerCase().includes(q) ||
-      (p.categoryLabel && p.categoryLabel.toLowerCase().includes(q))
-    );
-    render(filtered);
-  });
-
-  load();
-</script>
-
-
-</body>
+    <script type="module" src="./js/store-improved.js"></script>
+  </body>
 </html>

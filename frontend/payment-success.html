@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pagamento Aprovado - Hathor Imports</title>
+    <link rel="stylesheet" href="assets/style.css" />
+    <style>
+      .payment-result {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+      }
+
+      .result-card {
+        background: white;
+        border-radius: 20px;
+        padding: 60px 40px;
+        max-width: 600px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      .result-icon {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 30px;
+        background: #10b981;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 60px;
+        animation: scaleIn 0.5s ease-out;
+      }
+
+      @keyframes scaleIn {
+        from {
+          transform: scale(0);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .result-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 15px;
+      }
+
+      .result-message {
+        font-size: 18px;
+        color: #6b7280;
+        margin-bottom: 30px;
+        line-height: 1.6;
+      }
+
+      .payment-details {
+        background: #f9fafb;
+        border-radius: 12px;
+        padding: 25px;
+        margin: 30px 0;
+        text-align: left;
+      }
+
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .detail-row:last-child {
+        border-bottom: none;
+      }
+
+      .detail-label {
+        font-weight: 600;
+        color: #4b5563;
+      }
+
+      .detail-value {
+        color: #1f2937;
+        font-weight: 500;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+      }
+
+      .btn {
+        flex: 1;
+        padding: 16px 24px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+      }
+
+      .btn-primary {
+        background: #667eea;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-secondary {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+      }
+
+      .btn-secondary:hover {
+        background: #f3f4f6;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f4f6;
+        border-top-color: #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="payment-result">
+      <div class="result-card">
+        <div class="result-icon">✅</div>
+
+        <h1 class="result-title">Pagamento Aprovado!</h1>
+        <p class="result-message">
+          Seu pedido foi confirmado com sucesso. Em breve você receberá um email
+          com os detalhes da compra.
+        </p>
+
+        <div class="payment-details" id="payment-details">
+          <div class="loading"></div>
+          <p style="text-align: center; color: #6b7280; margin-top: 10px">
+            Carregando detalhes do pagamento...
+          </p>
+        </div>
+
+        <div class="action-buttons">
+          <a href="store.html" class="btn btn-secondary">
+            Continuar Comprando
+          </a>
+          <a href="index.html" class="btn btn-primary"> Voltar ao Início </a>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      // Obter parâmetros da URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const paymentId = urlParams.get("payment_id");
+      const status = urlParams.get("status");
+      const externalReference = urlParams.get("external_reference");
+
+      // Exibir detalhes do pagamento
+      const detailsContainer = document.getElementById("payment-details");
+
+      if (paymentId) {
+        detailsContainer.innerHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">ID do Pagamento:</span>
+                    <span class="detail-value">${paymentId}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value">Aprovado</span>
+                </div>
+                ${
+                  externalReference
+                    ? `
+                <div class="detail-row">
+                    <span class="detail-label">Número do Pedido:</span>
+                    <span class="detail-value">${externalReference}</span>
+                </div>
+                `
+                    : ""
+                }
+                <div class="detail-row">
+                    <span class="detail-label">Data:</span>
+                    <span class="detail-value">${new Date().toLocaleString(
+                      "pt-BR"
+                    )}</span>
+                </div>
+            `;
+      } else {
+        detailsContainer.innerHTML = `
+                <p style="text-align: center; color: #6b7280;">
+                    Pagamento aprovado! Verifique seu email para mais detalhes.
+                </p>
+            `;
+      }
+
+      // Limpar carrinho após pagamento aprovado
+      localStorage.removeItem("cart");
+
+      console.log("✅ Pagamento aprovado:", {
+        paymentId,
+        status,
+        externalReference,
+      });
+    </script>
+  </body>
+</html>

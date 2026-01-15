@@ -1,393 +1,561 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin · Hathor Imports</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./assets/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+      .card {
+        background-color: #000000;
+      }
 
-<head>
-  <meta charset="UTF-8" />
-  <title>Admin · Hathor Imports</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="./assets/style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <style>
-    .card {
-      background-color: #000000;
-    }
+      .admin-list-item {
+        color: #000000;
+      }
 
-    .admin-list-item {
-      color: #000000;
-    }
+      .modal-box {
+        color: #000000;
+      }
 
-    .modal-box {
-      color: #000000;
-    }
+      .status-box {
+        color: #000000;
+      }
+    </style>
+  </head>
 
-    .status-box {
-      color: #000000;
-    }
-  </style>
-</head>
-
-<body class="admin-body">
-  <div class="admin-layout">
-    <aside class="admin-sidebar">
-      <div class="admin-sidebar-header">
-        <div class="logo-mark"></div>
-        <div class="logo-text">
-          <span class="logo-title">HATHOR</span>
-          <span class="logo-sub">ADMIN</span>
-        </div>
-      </div>
-      <nav class="admin-menu">
-        <button class="admin-menu-item active" data-view="dashboardView">Dashboard</button>
-        <button class="admin-menu-item" data-view="productsView">Produtos</button>
-        <button class="admin-menu-item" data-view="importView">Importar da Yupoo</button>
-        <button class="admin-menu-item" data-view="ordersView">Pedidos</button>
-        <button class="admin-menu-item" data-view="customersView">Clientes</button>
-        <button class="admin-menu-item" data-view="couponsView">Cupons</button>
-        <button class="admin-menu-item" data-view="settingsView">Configurações</button>
-      </nav>
-      <button id="logoutBtn" class="admin-logout">Sair</button>
-    </aside>
-
-    <main class="admin-main">
-      <header class="admin-main-header">
-        <h1 id="adminTitle">Dashboard</h1>
-        <span class="admin-subtitle">Painel interno da Hathor Imports</span>
-      </header>
-
-      <!-- DASHBOARD -->
-      <section id="dashboardView" class="admin-view active">
-        <div class="dashboard-grid">
-          <div class="card card--metric">
-            <h3>Total de produtos</h3>
-            <p id="metricTotalProducts" class="metric-number">0</p>
-          </div>
-          <div class="card card--metric">
-            <h3>Preço médio</h3>
-            <p id="metricAvgPrice" class="metric-number">R$ 0,00</p>
-          </div>
-          <div class="card card--metric">
-            <h3>Último importado</h3>
-            <p id="metricLastImport" class="metric-number metric-small">-</p>
+  <body class="admin-body">
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <div class="admin-sidebar-header">
+          <div class="logo-mark"></div>
+          <div class="logo-text">
+            <span class="logo-title">HATHOR</span>
+            <span class="logo-sub">ADMIN</span>
           </div>
         </div>
-        <div class="card">
-          <h2>Últimas ações</h2>
-          <pre id="dashboardLog" class="status-box"></pre>
-        </div>
-      </section>
-
-      <!-- PRODUTOS -->
-      <section id="productsView" class="admin-view">
-        <div class="card">
-          <h2>Produtos cadastrados</h2>
-          <p class="card-text">Lista dos produtos ativos na vitrine da loja.</p>
-          <div id="productList" class="admin-products-container"></div>
-        </div>
-      </section>
-
-
-
-
-      <!-- IMPORT YUPOO -->
-      <section id="importView" class="admin-view">
-        <div class="card">
-          <h2>Importar álbum da Yupoo</h2>
-          <p class="card-text">
-            Cole o link do álbum. O sistema limpa o título (sem chinês, batch, código) e converte o preço de ¥ para R$,
-            já com margem + frete + declaração.
-          </p>
-
-          <label for="yupooUrl">Link do álbum</label>
-          <input id="yupooUrl" type="text" placeholder="https://...yupoo.com/albums/..." />
-
-          <label for="defaultPrice">Preço padrão (R$) se não achar na página</label>
-          <input id="defaultPrice" type="number" placeholder="399.90" />
-
-          <button id="importBtn" class="btn-primary full">Importar álbum</button>
-
-          <pre id="importStatus" class="status-box"></pre>
-        </div>
-      </section>
-
-      <!-- PEDIDOS -->
-      <section id="ordersView" class="admin-view">
-        <div class="card">
-          <h2>Pedidos</h2>
-          <p class="card-text">
-            Cadastro de pedidos vinculando cliente, produto e cupom. Ideal para você controlar vendas fechadas via
-            WhatsApp.
-          </p>
-
-          <div class="settings-grid">
-            <div>
-              <label for="orderCustomer">Cliente</label>
-              <select id="orderCustomer"></select>
-
-              <label for="orderProduct">Produto</label>
-              <select id="orderProduct"></select>
-            </div>
-            <div>
-              <label for="orderCoupon">Cupom (opcional)</label>
-              <select id="orderCoupon"></select>
-
-              <label for="orderTotal">Total (R$)</label>
-              <input id="orderTotal" type="number" step="0.01" placeholder="0.00" />
-            </div>
-          </div>
-
-          <div class="settings-grid" style="margin-top: 10px;">
-            <div>
-              <label for="orderStatus">Status</label>
-              <select id="orderStatus">
-                <option value="pendente">Pendente</option>
-                <option value="pago">Pago</option>
-                <option value="enviado">Enviado</option>
-                <option value="cancelado">Cancelado</option>
-              </select>
-            </div>
-            <div>
-              <label for="orderPayment">Forma de pagamento</label>
-              <select id="orderPayment">
-                <option value="pix">Pix</option>
-                <option value="cartao">Cartão</option>
-                <option value="dinheiro">Dinheiro</option>
-                <option value="outros">Outros</option>
-              </select>
-            </div>
-          </div>
-
-          <button id="createOrderBtn" class="btn-primary full" style="margin-top: 10px;">Registrar pedido</button>
-
-          <div id="ordersList" class="admin-list-block"></div>
-        </div>
-      </section>
-
-      <!-- CLIENTES -->
-      <section id="customersView" class="admin-view">
-        <div class="card">
-          <h2>Clientes</h2>
-          <p class="card-text">
-            Cadastro básico de clientes para vincular pedidos e contatos.
-          </p>
-
-          <div class="settings-grid">
-            <div>
-              <label for="customerName">Nome</label>
-              <input id="customerName" type="text" placeholder="Nome completo" />
-
-              <label for="customerEmail">E-mail</label>
-              <input id="customerEmail" type="email" placeholder="email@exemplo.com" />
-            </div>
-            <div>
-              <label for="customerWhatsapp">WhatsApp</label>
-              <input id="customerWhatsapp" type="text" placeholder="5519994000000" />
-
-              <label for="customerNotes">Observações</label>
-              <textarea id="customerNotes" rows="3" placeholder="Perfis de numeração, preferências, etc."></textarea>
-            </div>
-          </div>
-
-          <button id="createCustomerBtn" class="btn-primary full" style="margin-top: 10px;">Salvar cliente</button>
-
-          <div id="customersList" class="admin-list-block"></div>
-        </div>
-      </section>
-
-      <!-- CUPONS -->
-      <section id="couponsView" class="admin-view">
-        <div class="card">
-          <h2>Cupons de desconto</h2>
-          <p class="card-text">
-            Cadastre cupons para campanhas pontuais ou clientes específicos.
-          </p>
-
-          <div class="settings-grid">
-            <div>
-              <label for="couponCode">Código do cupom</label>
-              <input id="couponCode" type="text" placeholder="HATHOR10" />
-
-              <label for="couponType">Tipo</label>
-              <select id="couponType">
-                <option value="percent">Porcentagem (%)</option>
-                <option value="fixed">Valor fixo (R$)</option>
-              </select>
-            </div>
-            <div>
-              <label for="couponValue">Valor</label>
-              <input id="couponValue" type="number" step="0.01" placeholder="10" />
-
-              <label for="couponMaxUses">Uso máximo</label>
-              <input id="couponMaxUses" type="number" placeholder="100" />
-            </div>
-          </div>
-
-          <div class="settings-grid" style="margin-top: 10px;">
-            <div>
-              <label for="couponExpires">Validade</label>
-              <input id="couponExpires" type="date" />
-            </div>
-            <div>
-              <label>
-                <input id="couponActive" type="checkbox" checked />
-                Ativo
-              </label>
-            </div>
-          </div>
-
-          <button id="createCouponBtn" class="btn-primary full" style="margin-top: 10px;">Criar cupom</button>
-
-          <div id="couponsList" class="admin-list-block"></div>
-        </div>
-      </section>
-
-      <!-- CONFIGURAÇÕES -->
-      <section id="settingsView" class="admin-view">
-        <div class="card" style="margin-top:20px; border:1px solid #333; padding:15px;">
-          <h3>Configurações da Loja (Firebase)</h3>
-          <p class="card-text">
-            Atualize os preços de conversão para a importação.
-            Esses valores afetam diretamente o cálculo automático dos produtos!
-          </p>
-
-          <label>WhatsApp para Atendimento</label>
-          <input id="cfgWhatsapp" type="text" placeholder="5519994004912">
-
-          <label>Cotação ¥ → R$</label>
-          <input id="cfgCotacao" type="number" step="0.01" placeholder="0.75">
-
-          <label>Frete padrão (R$)</label>
-          <input id="cfgFrete" type="number" step="0.01" placeholder="80">
-
-          <label>Declaração padrão (R$)</label>
-          <input id="cfgDeclaracao" type="number" step="0.01" placeholder="60">
-
-          <label>Margem (%)</label>
-          <input id="cfgMargemPercent" type="number" step="0.1" placeholder="40">
-
-          <button id="saveSettingsBtn" class="btn-primary full" style="margin-top:10px;">
-            Salvar Configurações
+        <nav class="admin-menu">
+          <button class="admin-menu-item active" data-view="dashboardView">
+            Dashboard
           </button>
+          <button class="admin-menu-item" data-view="productsView">
+            Produtos
+          </button>
+          <button class="admin-menu-item" data-view="importView">
+            Importar da Yupoo
+          </button>
+          <button class="admin-menu-item" data-view="ordersView">
+            Pedidos
+          </button>
+          <button class="admin-menu-item" data-view="customersView">
+            Clientes
+          </button>
+          <button class="admin-menu-item" data-view="couponsView">
+            Cupons
+          </button>
+          <button class="admin-menu-item" data-view="settingsView">
+            Configurações
+          </button>
+        </nav>
+        <button id="logoutBtn" class="admin-logout">Sair</button>
+      </aside>
+
+      <main class="admin-main">
+        <header class="admin-main-header">
+          <h1 id="adminTitle">Dashboard</h1>
+          <span class="admin-subtitle">Painel interno da Hathor Imports</span>
+        </header>
+
+        <!-- DASHBOARD -->
+        <section id="dashboardView" class="admin-view active">
+          <div class="dashboard-grid">
+            <div class="card card--metric">
+              <h3>Total de produtos</h3>
+              <p id="metricTotalProducts" class="metric-number">0</p>
+            </div>
+            <div class="card card--metric">
+              <h3>Preço médio</h3>
+              <p id="metricAvgPrice" class="metric-number">R$ 0,00</p>
+            </div>
+            <div class="card card--metric">
+              <h3>Último importado</h3>
+              <p id="metricLastImport" class="metric-number metric-small">-</p>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Últimas ações</h2>
+            <pre id="dashboardLog" class="status-box"></pre>
+          </div>
+        </section>
+
+        <!-- PRODUTOS -->
+        <section id="productsView" class="admin-view">
+          <div class="card">
+            <h2>Produtos cadastrados</h2>
+            <p class="card-text">
+              Lista dos produtos ativos na vitrine da loja.
+            </p>
+            <div id="productList" class="admin-products-container"></div>
+          </div>
+        </section>
+
+        <!-- IMPORT YUPOO -->
+        <section id="importView" class="admin-view">
+          <div class="card">
+            <h2>Importar álbum da Yupoo</h2>
+            <p class="card-text">
+              Cole o link do álbum. O sistema limpa o título (sem chinês, batch,
+              código) e converte o preço de ¥ para R$, já com margem + frete +
+              declaração.
+            </p>
+
+            <label for="yupooUrl">Link do álbum</label>
+            <input
+              id="yupooUrl"
+              type="text"
+              placeholder="https://...yupoo.com/albums/..."
+            />
+
+            <label for="defaultPrice"
+              >Preço padrão (R$) se não achar na página</label
+            >
+            <input id="defaultPrice" type="number" placeholder="399.90" />
+
+            <button id="importBtn" class="btn-primary full">
+              Importar álbum
+            </button>
+
+            <pre id="importStatus" class="status-box"></pre>
+          </div>
+        </section>
+
+        <!-- PEDIDOS -->
+        <section id="ordersView" class="admin-view">
+          <div class="card">
+            <h2>Pedidos</h2>
+            <p class="card-text">
+              Cadastro de pedidos vinculando cliente, produto e cupom. Ideal
+              para você controlar vendas fechadas via WhatsApp.
+            </p>
+
+            <div class="settings-grid">
+              <div>
+                <label for="orderCustomer">Cliente</label>
+                <select id="orderCustomer"></select>
+
+                <label for="orderProduct">Produto</label>
+                <select id="orderProduct"></select>
+              </div>
+              <div>
+                <label for="orderCoupon">Cupom (opcional)</label>
+                <select id="orderCoupon"></select>
+
+                <label for="orderTotal">Total (R$)</label>
+                <input
+                  id="orderTotal"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div class="settings-grid" style="margin-top: 10px">
+              <div>
+                <label for="orderStatus">Status</label>
+                <select id="orderStatus">
+                  <option value="pendente">Pendente</option>
+                  <option value="pago">Pago</option>
+                  <option value="enviado">Enviado</option>
+                  <option value="cancelado">Cancelado</option>
+                </select>
+              </div>
+              <div>
+                <label for="orderPayment">Forma de pagamento</label>
+                <select id="orderPayment">
+                  <option value="pix">Pix</option>
+                  <option value="cartao">Cartão</option>
+                  <option value="dinheiro">Dinheiro</option>
+                  <option value="outros">Outros</option>
+                </select>
+              </div>
+            </div>
+
+            <button
+              id="createOrderBtn"
+              class="btn-primary full"
+              style="margin-top: 10px"
+            >
+              Registrar pedido
+            </button>
+
+            <div id="ordersList" class="admin-list-block"></div>
+          </div>
+        </section>
+
+        <!-- CLIENTES -->
+        <section id="customersView" class="admin-view">
+          <div class="card">
+            <h2>Clientes</h2>
+            <p class="card-text">
+              Cadastro básico de clientes para vincular pedidos e contatos.
+            </p>
+
+            <div class="settings-grid">
+              <div>
+                <label for="customerName">Nome</label>
+                <input
+                  id="customerName"
+                  type="text"
+                  placeholder="Nome completo"
+                />
+
+                <label for="customerEmail">E-mail</label>
+                <input
+                  id="customerEmail"
+                  type="email"
+                  placeholder="email@exemplo.com"
+                />
+              </div>
+              <div>
+                <label for="customerWhatsapp">WhatsApp</label>
+                <input
+                  id="customerWhatsapp"
+                  type="text"
+                  placeholder="5519994000000"
+                />
+
+                <label for="customerNotes">Observações</label>
+                <textarea
+                  id="customerNotes"
+                  rows="3"
+                  placeholder="Perfis de numeração, preferências, etc."
+                ></textarea>
+              </div>
+            </div>
+
+            <button
+              id="createCustomerBtn"
+              class="btn-primary full"
+              style="margin-top: 10px"
+            >
+              Salvar cliente
+            </button>
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 20px;
+              "
+            >
+              <h3 style="margin: 0">Clientes cadastrados</h3>
+              <button
+                id="refreshCustomersBtn"
+                class="btn-outline"
+                style="padding: 8px 16px"
+              >
+                🔄 Atualizar
+              </button>
+            </div>
+            <div id="customersList" class="admin-list-block"></div>
+          </div>
+        </section>
+
+        <!-- CUPONS -->
+        <section id="couponsView" class="admin-view">
+          <div class="card">
+            <h2>Cupons de desconto</h2>
+            <p class="card-text">
+              Cadastre cupons para campanhas pontuais ou clientes específicos.
+            </p>
+
+            <div class="settings-grid">
+              <div>
+                <label for="couponCode">Código do cupom</label>
+                <input id="couponCode" type="text" placeholder="HATHOR10" />
+
+                <label for="couponType">Tipo</label>
+                <select id="couponType">
+                  <option value="percent">Porcentagem (%)</option>
+                  <option value="fixed">Valor fixo (R$)</option>
+                </select>
+              </div>
+              <div>
+                <label for="couponValue">Valor</label>
+                <input
+                  id="couponValue"
+                  type="number"
+                  step="0.01"
+                  placeholder="10"
+                />
+
+                <label for="couponMaxUses">Uso máximo</label>
+                <input id="couponMaxUses" type="number" placeholder="100" />
+              </div>
+            </div>
+
+            <div class="settings-grid" style="margin-top: 10px">
+              <div>
+                <label for="couponExpires">Validade</label>
+                <input id="couponExpires" type="date" />
+              </div>
+              <div>
+                <label>
+                  <input id="couponActive" type="checkbox" checked />
+                  Ativo
+                </label>
+              </div>
+            </div>
+
+            <button
+              id="createCouponBtn"
+              class="btn-primary full"
+              style="margin-top: 10px"
+            >
+              Criar cupom
+            </button>
+
+            <div id="couponsList" class="admin-list-block"></div>
+          </div>
+        </section>
+
+        <!-- CONFIGURAÇÕES -->
+        <section id="settingsView" class="admin-view">
+          <div
+            class="card"
+            style="margin-top: 20px; border: 1px solid #333; padding: 15px"
+          >
+            <h3>Configurações da Loja (Firebase)</h3>
+            <p class="card-text">
+              Atualize os preços de conversão para a importação. Esses valores
+              afetam diretamente o cálculo automático dos produtos!
+            </p>
+
+            <label>WhatsApp para Atendimento</label>
+            <input id="cfgWhatsapp" type="text" placeholder="5519994004912" />
+
+            <label>Cotação ¥ → R$</label>
+            <input
+              id="cfgCotacao"
+              type="number"
+              step="0.01"
+              placeholder="0.75"
+            />
+
+            <label>Frete padrão (R$)</label>
+            <input id="cfgFrete" type="number" step="0.01" placeholder="80" />
+
+            <label>Declaração padrão (R$)</label>
+            <input
+              id="cfgDeclaracao"
+              type="number"
+              step="0.01"
+              placeholder="60"
+            />
+
+            <label>Margem (%)</label>
+            <input
+              id="cfgMargemPercent"
+              type="number"
+              step="0.1"
+              placeholder="40"
+            />
+
+            <button
+              id="saveSettingsBtn"
+              class="btn-primary full"
+              style="margin-top: 10px"
+            >
+              Salvar Configurações
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <footer class="footer footer--admin">
+      <p class="footer-copy">Hathor Imports · Painel interno</p>
+    </footer>
+
+    <script type="module" src="./js/admin-page.js"></script>
+
+    <!-- MODAL DE PEDIDO -->
+    <div id="orderModal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <h2>Detalhes do Pedido</h2>
+
+        <div class="modal-content">
+          <p><strong>Cliente:</strong> <span id="modalCustomer"></span></p>
+          <p><strong>WhatsApp:</strong> <span id="modalWhatsapp"></span></p>
+          <p><strong>CEP:</strong> <span id="modalCep"></span></p>
+          <p><strong>Endereço:</strong> <span id="modalAddress"></span></p>
+          <p><strong>Total:</strong> R$ <span id="modalTotal"></span></p>
+          <p><strong>Pagamento:</strong> <span id="modalPayment"></span></p>
+
+          <h3>Itens</h3>
+          <ul id="modalItems"></ul>
+          <label><strong>Método de Pagamento</strong></label>
+          <select id="modalPaymentMethod">
+            <option value="PIX">PIX</option>
+            <option value="Cartão de Crédito">Cartão de Crédito</option>
+            <option value="Cartão de Débito">Cartão de Débito</option>
+            <option value="Dinheiro">Dinheiro</option>
+          </select>
+
+          <label><strong>Status do Pedido</strong></label>
+          <select id="modalStatus">
+            <option value="pending">⏳ Pendente</option>
+            <option value="approved">✅ Aprovado</option>
+            <option value="processing">⚙️ Processando</option>
+            <option value="rejected">❌ Rejeitado</option>
+            <option value="cancelled">🚫 Cancelado</option>
+          </select>
         </div>
-      </section>
 
-    </main>
-  </div>
-
-  <footer class="footer footer--admin">
-    <p class="footer-copy">Hathor Imports · Painel interno</p>
-  </footer>
-
-  <script type="module" src="./js/admin-page.js"></script>
-
-  <!-- MODAL DE PEDIDO -->
-  <div id="orderModal" class="modal-overlay hidden">
-    <div class="modal-box">
-      <h2>Detalhes do Pedido</h2>
-
-      <div class="modal-content">
-        <p><strong>Cliente:</strong> <span id="modalCustomer"></span></p>
-        <p><strong>WhatsApp:</strong> <span id="modalWhatsapp"></span></p>
-        <p><strong>CEP:</strong> <span id="modalCep"></span></p>
-        <p><strong>Endereço:</strong> <span id="modalAddress"></span></p>
-        <p><strong>Total:</strong> R$ <span id="modalTotal"></span></p>
-        <p><strong>Pagamento:</strong> <span id="modalPayment"></span></p>
-
-        <h3>Itens</h3>
-        <ul id="modalItems"></ul>
-        <label><strong>Método de Pagamento</strong></label>
-        <select id="modalPaymentMethod">
-          <option value="PIX">PIX</option>
-          <option value="Cartão de Crédito">Cartão de Crédito</option>
-          <option value="Cartão de Débito">Cartão de Débito</option>
-          <option value="Dinheiro">Dinheiro</option>
-        </select>
-
-        <label><strong>Status do Pedido</strong></label>
-        <select id="modalStatus">
-          <option value="pendente">Pendente</option>
-          <option value="pago">Pago</option>
-          <option value="enviado">Enviado</option>
-          <option value="cancelado">Cancelado</option>
-        </select>
-
-      </div>
-
-      <div class="modal-actions">
-        <button id="modalSaveBtn" class="btn-primary">Salvar</button>
-        <button id="modalCloseBtn" class="btn-outline">Fechar</button>
+        <div class="modal-actions">
+          <button id="modalSaveBtn" class="btn-primary">Salvar</button>
+          <button id="modalCloseBtn" class="btn-outline">Fechar</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <style>
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.55);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
-    }
+    <style>
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.55);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+      }
 
-    .modal-overlay.hidden {
-      display: none;
-    }
+      .modal-overlay.hidden {
+        display: none;
+      }
 
-    .modal-box {
-      background: #fff;
-      padding: 25px;
-      border-radius: 12px;
-      width: 480px;
-      max-width: 90%;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    }
+      .modal-box {
+        background: #fff;
+        padding: 25px;
+        border-radius: 12px;
+        width: 480px;
+        max-width: 90%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      }
 
-    .modal-box h2 {
-      margin-top: 0;
-    }
+      .modal-box h2 {
+        margin-top: 0;
+      }
 
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 20px;
-      gap: 10px;
-    }
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 20px;
+        gap: 10px;
+      }
 
-    #modalItems li {
-      padding: 4px 0;
-      border-bottom: 1px solid #eee;
-    }
-  </style>
-  <!-- MODAL EDITAR PRODUTO -->
-  <div id="productModal" class="modal-overlay hidden">
-    <div class="modal-box">
-      <h2>Editar Produto</h2>
+      #modalItems li {
+        padding: 4px 0;
+        border-bottom: 1px solid #eee;
+      }
 
-      <label>Título</label>
-      <input id="editTitle" type="text">
+      #customersList {
+        min-height: 80px;
+      }
 
-      <label>Preço (R$)</label>
-      <input id="editPrice" type="number" step="0.01">
+      .card {
+        margin-bottom: 40px !important;
+      }
 
-      <label>Promoção (%)</label>
-      <input id="editPromoPercent" type="number">
+      #customersList {
+        margin-top: 20px;
+        background: #111;
+        /* ou branco se preferir */
+        padding: 10px 15px;
+        border-radius: 8px;
+        min-height: 150px;
+        /* chave para não desaparecer */
+        color: white;
+        /* porque seu card é escuro */
+      }
 
-      <p style="margin-top:8px;margin-bottom:15px">
-        Preço final:
-        <strong id="editFinalPrice" style="font-size:1.25rem;color:#e11d48;"></strong>
-      </p>
+      .admin-list-block {
+        margin-top: 30px;
+        padding-bottom: 40px;
+      }
+    </style>
+    <!-- MODAL EDITAR PRODUTO -->
+    <div id="productModal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <h2>Editar Produto</h2>
 
-      <div class="modal-actions">
-        <button id="saveProductBtn" class="btn-primary">Salvar</button>
-        <button id="closeProductModal" class="btn-outline">Fechar</button>
+        <label>Título</label>
+        <input id="editTitle" type="text" />
+
+        <label>Preço (R$)</label>
+        <input id="editPrice" type="number" step="0.01" />
+
+        <label>Promoção (%)</label>
+        <input id="editPromoPercent" type="number" />
+
+        <p style="margin-top: 8px; margin-bottom: 15px">
+          Preço final:
+          <strong
+            id="editFinalPrice"
+            style="font-size: 1.25rem; color: #e11d48"
+          ></strong>
+        </p>
+
+        <div class="modal-actions">
+          <button id="saveProductBtn" class="btn-primary">Salvar</button>
+          <button id="closeProductModal" class="btn-outline">Fechar</button>
+        </div>
       </div>
     </div>
-  </div>
 
-</body>
+    <!-- MODAL PREVIEW IMPORTAÇÃO -->
+    <div id="previewModal" class="modal-overlay hidden">
+      <div class="modal-box" style="max-width: 700px">
+        <h2>Pré-visualização do Produto</h2>
 
+        <label>Título</label>
+        <input id="previewTitle" type="text" />
+
+        <label>Preço final (R$)</label>
+        <input id="previewPrice" type="number" step="0.01" />
+
+        <label>Categoria</label>
+        <select id="previewCategory">
+          <option value="sneakers">Tênis</option>
+          <option value="shirt">Camisa</option>
+          <option value="bag">Bolsa</option>
+          <option value="others">Outros</option>
+        </select>
+
+        <label>Marca</label>
+        <input id="previewBrand" type="text" />
+
+        <label>Modelo</label>
+        <input id="previewModel" type="text" />
+
+        <label>Imagens</label>
+        <div
+          id="previewImages"
+          style="display: flex; gap: 8px; overflow-x: auto"
+        ></div>
+
+        <div class="modal-actions">
+          <button id="confirmImportBtn" class="btn-primary">
+            Confirmar e Salvar
+          </button>
+          <button id="cancelImportBtn" class="btn-outline">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>
