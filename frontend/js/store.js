@@ -18,6 +18,7 @@ import {
   updateDoc,
   increment,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import API_URL from "./api-config.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -77,7 +78,7 @@ export async function deleteProduct(productId) {
     const token = await user.getIdToken();
 
     const response = await fetch(
-      `http://localhost:4000/api/products/${productId}`,
+      `${API_URL}/api/products/${productId}`,
       {
         method: "DELETE",
         headers: {
