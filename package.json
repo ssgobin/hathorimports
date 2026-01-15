@@ -1,0 +1,20 @@
+{
+  "name": "hathor-imports",
+  "version": "1.0.0",
+  "description": "Hathor Imports - Full Stack Application",
+  "private": true,
+  "scripts": {
+    "start": "cd backend && npm start",
+    "dev": "cd backend && npm run dev",
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "build": "echo 'Build configuration for Railway'",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
