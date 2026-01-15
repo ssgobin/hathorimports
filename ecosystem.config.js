@@ -60,9 +60,9 @@ module.exports = {
   deploy: {
     production: {
       user: 'deploy',
-      host: 'seu-servidor.com',
+      host: 'hathorimports.com',
       ref: 'origin/main',
-      repo: 'git@github.com:seu-usuario/hathorimports.git',
+      repo: 'git@github.com:ssgobin/hathorimports.git',
       path: '/var/www/hathorimports',
       'post-deploy': 'cd backend && npm install --production && pm2 reload ecosystem.config.js --env production',
       'pre-setup': 'apt-get install git'
