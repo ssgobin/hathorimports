@@ -1,0 +1,9 @@
+{
+  "buildCommand": "echo 'Frontend is static HTML'",
+  "outputDirectory": ".",
+  "framework": "html",
+  "public": true,
+  "env": {
+    "VITE_API_URL": "@vite_api_url"
+  }
+}

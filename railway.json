@@ -7,6 +7,6 @@
     "startCommand": "cd backend && npm install && npm start"
   },
   "env": {
-    "NODE_VERSION": "20.11.0"
+    "NODE_VERSION": "20.18.1"
   }
 }
