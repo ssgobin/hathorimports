@@ -1,8 +1,12 @@
 {
   "build": {
-    "builder": "RAILPACK"
+    "builder": "RAILPACK",
+    "buildpacks": ["heroku/nodejs"]
   },
   "deploy": {
     "startCommand": "cd backend && npm install && npm start"
+  },
+  "env": {
+    "NODE_VERSION": "20.11.0"
   }
 }
