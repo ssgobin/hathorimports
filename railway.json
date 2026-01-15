@@ -1,9 +1,8 @@
 {
   "build": {
-    "builder": "heroku.buildpacks",
-    "buildpacks": ["heroku/nodejs"]
+    "builder": "RAILPACK"
   },
   "deploy": {
-    "startCommand": "npm start"
+    "startCommand": "cd backend && npm install && npm start"
   }
 }

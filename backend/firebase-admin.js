@@ -7,6 +7,7 @@ let firebaseApp;
 /**
  * Inicializa o Firebase Admin SDK
  * Usa credenciais do arquivo JSON ou variáveis de ambiente
+ * Também suporta JSON completo via FIREBASE_SERVICE_ACCOUNT_JSON (Railway)
  */
 export function initializeFirebaseAdmin() {
   if (firebaseApp) {
@@ -14,7 +15,34 @@ export function initializeFirebaseAdmin() {
   }
 
   try {
-    // Opção 1: Usar arquivo de credenciais (RECOMENDADO)
+    // Opção 1: Usar JSON completo de variável de ambiente (RAILWAY)
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+      console.log(
+        "[Firebase Admin] Usando JSON completo de variável de ambiente (Railway)"
+      );
+      try {
+        const serviceAccount = JSON.parse(
+          process.env.FIREBASE_SERVICE_ACCOUNT_JSON
+        );
+
+        firebaseApp = admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount),
+        });
+
+        console.log(
+          "[Firebase Admin] Inicializado com sucesso usando FIREBASE_SERVICE_ACCOUNT_JSON"
+        );
+        return firebaseApp;
+      } catch (err) {
+        console.error(
+          "[Firebase Admin] Erro ao parsear FIREBASE_SERVICE_ACCOUNT_JSON:",
+          err.message
+        );
+        console.log("[Firebase Admin] Tentando próxima opção...");
+      }
+    }
+
+    // Opção 2: Usar arquivo de credenciais (LOCAL)
     const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
 
     if (serviceAccountPath) {
@@ -36,7 +64,7 @@ export function initializeFirebaseAdmin() {
       return firebaseApp;
     }
 
-    // Opção 2: Usar variáveis de ambiente individuais
+    // Opção 3: Usar variáveis de ambiente individuais
     const projectId = process.env.FIREBASE_PROJECT_ID;
 
     if (

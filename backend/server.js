@@ -19,7 +19,41 @@ import authRoutes from "./routes/auth.js";
 import paymentRoutes from "./routes/payment.js";
 import logger from "./logger.js";
 
+// ============================================
+// VALIDAÇÃO DE VARIÁVEIS DE AMBIENTE CRÍTICAS
+// ============================================
+const requiredEnvVars = [
+  "FIREBASE_PROJECT_ID",
+  "FIREBASE_AUTH_DOMAIN",
+  "FIREBASE_STORAGE_BUCKET",
+  "CLOUDINARY_CLOUD_NAME",
+];
+
+const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
+
+if (missingEnvVars.length > 0) {
+  console.error(
+    "❌ ERRO: Variáveis de ambiente faltando:",
+    missingEnvVars.join(", ")
+  );
+  console.error(
+    "⚠️  Certifique-se de que todas as variáveis estão configuradas no Railway ou no arquivo .env"
+  );
+  process.exit(1);
+}
+
 const app = express();
+
+// ============================================
+// INICIALIZAÇÃO FIREBASE
+// ============================================
+try {
+  initializeFirebaseAdmin();
+  console.log("✅ Firebase Admin inicializado com sucesso");
+} catch (error) {
+  console.error("❌ Erro ao inicializar Firebase:", error.message);
+  process.exit(1);
+}
 
 // ============================================
 // SEGURANÇA E PERFORMANCE
@@ -349,13 +383,41 @@ const server = app.listen(PORT, () => {
   console.log("\n============================================");
   console.log(`   🚀 Hathor Imports Backend`);
   console.log("   ============================================");
-  console.log(`   Servidor: http://localhost:${PORT}`);
-  console.log(`   Frontend: http://localhost:${PORT}/index.html`);
-  console.log(`   Admin: http://localhost:${PORT}/admin.html`);
-  console.log(`   Health: http://localhost:${PORT}/api/health`);
+  console.log(`   Porta: ${PORT}`);
   console.log(`   Ambiente: ${process.env.NODE_ENV || "development"}`);
+  console.log(`   Node: ${process.version}`);
   console.log(`   Logs: backend/logs/`);
+  console.log(`   Health: /api/health`);
   console.log("   ============================================\n");
+
+  // Logs adicionais em produção
+  if (process.env.NODE_ENV === "production") {
+    console.log("✅ Rodando em MODO PRODUÇÃO no Railway");
+    console.log(
+      `📍 Backend URL: ${process.env.BACKEND_URL || "Configure BACKEND_URL"}`
+    );
+  }
+});
+
+// Tratamento de erros não capturados
+process.on("unhandledRejection", (reason, promise) => {
+  logger.error("Unhandled Rejection at:", promise, "reason:", reason);
+  console.error("❌ Erro não tratado:", reason);
+});
+
+process.on("uncaughtException", (error) => {
+  logger.error("Uncaught Exception:", error);
+  console.error("❌ Exceção não capturada:", error);
+  process.exit(1);
+});
+
+// Graceful shutdown
+process.on("SIGTERM", () => {
+  console.log("\n🛑 SIGTERM recebido, encerrando gracefully...");
+  server.close(() => {
+    console.log("Servidor encerrado");
+    process.exit(0);
+  });
 });
 
 // Graceful shutdown
